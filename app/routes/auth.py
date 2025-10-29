@@ -338,8 +338,28 @@ def admin_dashboard():
         return render_template('admin_dashboard.html', users=users)
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {str(e)}")
-        # Return HTML error page instead of JSON for admin dashboard
-        return render_template('error.html', error_message='An unexpected error occurred while loading the admin dashboard.'), 500
+        # Return simple HTML error instead of template
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Admin Dashboard Error</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 40px; }}
+                .error {{ color: #d32f2f; background: #ffebee; padding: 20px; border-radius: 4px; }}
+            </style>
+        </head>
+        <body>
+            <h1>Admin Dashboard</h1>
+            <div class="error">
+                <h2>Error Loading Dashboard</h2>
+                <p>An unexpected error occurred while loading the admin dashboard.</p>
+                <p>The database may not be configured yet. Please contact the administrator.</p>
+                <p><a href="/admin/logout">Logout</a></p>
+            </div>
+        </body>
+        </html>
+        """, 500
 
 @auth_bp.route('/admin')
 def admin_login_redirect():
