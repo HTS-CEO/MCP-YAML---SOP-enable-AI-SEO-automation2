@@ -330,7 +330,11 @@ def admin_login():
 @admin_required
 def admin_dashboard():
     try:
-        users = user_manager.get_all_users()
+        # For admin users (from .env), show empty user list instead of trying to query DB
+        if session.get('user_id') == 'admin':
+            users = []
+        else:
+            users = user_manager.get_all_users()
         return render_template('admin_dashboard.html', users=users)
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {str(e)}")
