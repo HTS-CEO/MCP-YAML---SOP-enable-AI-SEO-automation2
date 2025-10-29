@@ -12,108 +12,121 @@ logger = get_logger()
 
 class DatabaseManager:
     def __init__(self):
-        self.database_url = os.getenv('DATABASE_URL', 'postgresql://localhost/seo_automation')
-        self.init_database()
+        self.database_url = os.getenv('DATABASE_URL')
+        if not self.database_url:
+            raise ValueError("DATABASE_URL environment variable is not set. Please configure your database connection.")
+        try:
+            self.init_database()
+        except Exception as e:
+            logger.error(f"Failed to initialize database: {str(e)}")
+            # Don't raise exception to allow app to start even if DB is not ready
+            pass
 
     def get_connection(self):
         return psycopg2.connect(self.database_url)
 
     def init_database(self):
         """Initialize all database tables"""
-        conn = self.get_connection()
-        c = conn.cursor()
+        conn = None
+        try:
+            conn = self.get_connection()
+            c = conn.cursor()
 
-        # Users table
-        c.execute('''CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            username VARCHAR(255) UNIQUE NOT NULL,
-            email VARCHAR(255) UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            role VARCHAR(50) DEFAULT 'user',
-            is_active BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            last_login TIMESTAMP,
-            api_calls_count INTEGER DEFAULT 0,
-            subscription_plan VARCHAR(50) DEFAULT 'free'
-        )''')
+            # Users table
+            c.execute('''CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) UNIQUE NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role VARCHAR(50) DEFAULT 'user',
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP,
+                api_calls_count INTEGER DEFAULT 0,
+                subscription_plan VARCHAR(50) DEFAULT 'free'
+            )''')
 
-        # User API Keys table
-        c.execute('''CREATE TABLE IF NOT EXISTS user_api_keys (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-            service_name VARCHAR(255) NOT NULL,
-            api_key TEXT NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            last_used TIMESTAMP,
-            usage_count INTEGER DEFAULT 0
-        )''')
+            # User API Keys table
+            c.execute('''CREATE TABLE IF NOT EXISTS user_api_keys (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                service_name VARCHAR(255) NOT NULL,
+                api_key TEXT NOT NULL,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_used TIMESTAMP,
+                usage_count INTEGER DEFAULT 0
+            )''')
 
-        # Global API Keys (managed by admin)
-        c.execute('''CREATE TABLE IF NOT EXISTS global_api_keys (
-            id SERIAL PRIMARY KEY,
-            service_name VARCHAR(255) UNIQUE NOT NULL,
-            api_key TEXT NOT NULL,
-            description TEXT,
-            is_active BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )''')
+            # Global API Keys (managed by admin)
+            c.execute('''CREATE TABLE IF NOT EXISTS global_api_keys (
+                id SERIAL PRIMARY KEY,
+                service_name VARCHAR(255) UNIQUE NOT NULL,
+                api_key TEXT NOT NULL,
+                description TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
 
-        # Posts table (existing)
-        c.execute('''CREATE TABLE IF NOT EXISTS posts (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users (id),
-            wordpress_id INTEGER,
-            title TEXT,
-            content TEXT,
-            keywords TEXT,
-            status VARCHAR(50) DEFAULT 'draft',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )''')
+            # Posts table (existing)
+            c.execute('''CREATE TABLE IF NOT EXISTS posts (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users (id),
+                wordpress_id INTEGER,
+                title TEXT,
+                content TEXT,
+                keywords TEXT,
+                status VARCHAR(50) DEFAULT 'draft',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
 
-        # User Sessions
-        c.execute('''CREATE TABLE IF NOT EXISTS user_sessions (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-            session_token TEXT UNIQUE NOT NULL,
-            ip_address VARCHAR(255),
-            user_agent TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            expires_at TIMESTAMP,
-            is_active BOOLEAN DEFAULT TRUE
-        )''')
+            # User Sessions
+            c.execute('''CREATE TABLE IF NOT EXISTS user_sessions (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                session_token TEXT UNIQUE NOT NULL,
+                ip_address VARCHAR(255),
+                user_agent TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP,
+                is_active BOOLEAN DEFAULT TRUE
+            )''')
 
-        # Activity Logs
-        c.execute('''CREATE TABLE IF NOT EXISTS activity_logs (
-            id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users (id),
-            action VARCHAR(255) NOT NULL,
-            details TEXT,
-            ip_address VARCHAR(255),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )''')
+            # Activity Logs
+            c.execute('''CREATE TABLE IF NOT EXISTS activity_logs (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users (id),
+                action VARCHAR(255) NOT NULL,
+                details TEXT,
+                ip_address VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )''')
 
-        # Insert default admin user if not exists
-        admin_username = os.getenv('ADMIN_USERNAME', 'admin')
-        admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
-        admin_email = os.getenv('ADMIN_EMAIL', 'admin@seoautomation.com')
+            # Insert default admin user if not exists
+            admin_username = os.getenv('ADMIN_USERNAME', 'admin')
+            admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+            admin_email = os.getenv('ADMIN_EMAIL', 'admin@seoautomation.com')
 
-        c.execute('SELECT id FROM users WHERE username = %s', (admin_username,))
-        if not c.fetchone():
-            password_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            c.execute('''INSERT INTO users (username, email, password_hash, role, subscription_plan)
-                        VALUES (%s, %s, %s, 'admin', 'enterprise')''',
-                     (admin_username, admin_email, password_hash))
-            logger.info(f"Created default admin user: {admin_username}")
+            c.execute('SELECT id FROM users WHERE username = %s', (admin_username,))
+            if not c.fetchone():
+                password_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                c.execute('''INSERT INTO users (username, email, password_hash, role, subscription_plan)
+                            VALUES (%s, %s, %s, 'admin', 'enterprise')''',
+                         (admin_username, admin_email, password_hash))
+                logger.info(f"Created default admin user: {admin_username}")
 
-        # Note: Default API keys are no longer inserted automatically
-        # Admin will add them manually through the admin interface
+            # Note: Default API keys are no longer inserted automatically
+            # Admin will add them manually through the admin interface
 
-        conn.commit()
-        conn.close()
-        logger.info("Database initialized successfully")
+            conn.commit()
+            logger.info("Database initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize database: {str(e)}")
+        finally:
+            if conn:
+                conn.close()
 
 class UserManager:
     def __init__(self):
@@ -135,10 +148,11 @@ class UserManager:
 
             # Create user
             c.execute('''INSERT INTO users (username, email, password_hash, role, subscription_plan)
-                        VALUES (%s, %s, %s, %s, %s)''',
+                        VALUES (%s, %s, %s, %s, %s)
+                        RETURNING id''',
                      (username, email, password_hash, role, subscription_plan))
 
-            user_id = c.lastrowid
+            user_id = c.fetchone()[0]
             conn.commit()
             conn.close()
 
@@ -264,11 +278,11 @@ class UserManager:
 
             for field, value in updates.items():
                 if field in ['username', 'email', 'role', 'is_active', 'subscription_plan']:
-                    update_fields.append(f"{field} = ?")
+                    update_fields.append(f"{field} = %s")
                     values.append(value)
 
             if update_fields:
-                query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = ?"
+                query = f"UPDATE users SET {', '.join(update_fields)} WHERE id = %s"
                 values.append(user_id)
                 c.execute(query, tuple(values))
                 conn.commit()
@@ -340,7 +354,7 @@ class APIKeyManager:
 
             # Check if key already exists
             c.execute('''SELECT id FROM user_api_keys
-                        WHERE user_id = ? AND service_name = ?''', (user_id, service_name))
+                        WHERE user_id = %s AND service_name = %s''', (user_id, service_name))
 
             existing = c.fetchone()
 
@@ -370,7 +384,7 @@ class APIKeyManager:
             conn = self.db.get_connection()
             c = conn.cursor()
             c.execute('''SELECT service_name, api_key, is_active, created_at, last_used, usage_count
-                        FROM user_api_keys WHERE user_id = ?''', (user_id,))
+                        FROM user_api_keys WHERE user_id = %s''', (user_id,))
             keys = c.fetchall()
             conn.close()
 
@@ -414,9 +428,13 @@ class APIKeyManager:
             conn = self.db.get_connection()
             c = conn.cursor()
 
-            c.execute('''INSERT OR REPLACE INTO global_api_keys
+            c.execute('''INSERT INTO global_api_keys
                          (service_name, api_key, description, updated_at)
-                         VALUES (?, ?, ?, CURRENT_TIMESTAMP)''',
+                         VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+                         ON CONFLICT (service_name) DO UPDATE SET
+                         api_key = EXCLUDED.api_key,
+                         description = EXCLUDED.description,
+                         updated_at = EXCLUDED.updated_at''',
                       (service_name, api_key, description))
 
             conn.commit()
@@ -436,7 +454,7 @@ class APIKeyManager:
             c = conn.cursor()
 
             c.execute('''DELETE FROM user_api_keys
-                         WHERE user_id = ? AND service_name = ?''',
+                         WHERE user_id = %s AND service_name = %s''',
                       (user_id, service_name))
 
             deleted = c.rowcount > 0
@@ -460,7 +478,7 @@ class APIKeyManager:
             c = conn.cursor()
 
             c.execute('''DELETE FROM global_api_keys
-                         WHERE service_name = ?''',
+                         WHERE service_name = %s''',
                       (service_name,))
 
             deleted = c.rowcount > 0
@@ -503,7 +521,7 @@ class SessionManager:
 
             expires_at = datetime.now() + timedelta(days=7)
             c.execute('''INSERT INTO user_sessions (user_id, session_token, ip_address, user_agent, expires_at)
-                        VALUES (?, ?, ?, ?, ?)''',
+                        VALUES (%s, %s, %s, %s, %s)''',
                      (user_id, session_token, ip_address, user_agent, expires_at))
 
             conn.commit()
@@ -529,7 +547,7 @@ class SessionManager:
             conn = self.db.get_connection()
             c = conn.cursor()
             c.execute('''SELECT id FROM user_sessions
-                        WHERE user_id = ? AND session_token = ? AND is_active = 1 AND expires_at > CURRENT_TIMESTAMP''',
+                        WHERE user_id = %s AND session_token = %s AND is_active = 1 AND expires_at > CURRENT_TIMESTAMP''',
                      (user_id, session_token))
 
             session = c.fetchone()
@@ -553,7 +571,7 @@ class SessionManager:
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
-            c.execute('UPDATE user_sessions SET is_active = 0 WHERE user_id = ? AND session_token = ?',
+            c.execute('UPDATE user_sessions SET is_active = 0 WHERE user_id = %s AND session_token = %s',
                      (user_id, session_token))
             conn.commit()
             conn.close()
