@@ -135,8 +135,17 @@ class UserManager:
     def __init__(self):
         self.db = DatabaseManager()
 
+    def _check_db_connection(self):
+        """Check if database is configured"""
+        if not self.db.database_url:
+            return False
+        return True
+
     def create_user(self, username, email, password, role='user', subscription_plan='free'):
         """Create a new user"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -168,6 +177,9 @@ class UserManager:
 
     def authenticate_user(self, username_or_email, password):
         """Authenticate user login"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -222,6 +234,9 @@ class UserManager:
 
     def get_user_by_id(self, user_id):
         """Get user by ID"""
+        if not self._check_db_connection():
+            return None
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -248,6 +263,9 @@ class UserManager:
 
     def get_all_users(self):
         """Get all users (admin only)"""
+        if not self._check_db_connection():
+            return []
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -349,8 +367,17 @@ class APIKeyManager:
     def __init__(self):
         self.db = DatabaseManager()
 
+    def _check_db_connection(self):
+        """Check if database is configured"""
+        if not self.db.database_url:
+            return False
+        return True
+
     def set_user_api_key(self, user_id, service_name, api_key):
         """Set API key for a specific user"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -383,6 +410,9 @@ class APIKeyManager:
 
     def get_user_api_keys(self, user_id):
         """Get all API keys for a user"""
+        if not self._check_db_connection():
+            return []
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -406,6 +436,9 @@ class APIKeyManager:
 
     def get_global_api_keys(self):
         """Get all global API keys (admin only)"""
+        if not self._check_db_connection():
+            return []
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -427,6 +460,9 @@ class APIKeyManager:
 
     def update_global_api_key(self, service_name, api_key, description=''):
         """Update global API key (admin only)"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -452,6 +488,9 @@ class APIKeyManager:
 
     def delete_user_api_key(self, user_id, service_name):
         """Delete a user's API key"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -476,6 +515,9 @@ class APIKeyManager:
 
     def delete_global_api_key(self, service_name):
         """Delete a global API key"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -504,8 +546,17 @@ class SessionManager:
         self.db = DatabaseManager()
         self.jwt_secret = os.getenv('JWT_SECRET_KEY', 'your-jwt-secret-key')
 
+    def _check_db_connection(self):
+        """Check if database is configured"""
+        if not self.db.database_url:
+            return False
+        return True
+
     def create_session(self, user_id, ip_address='', user_agent=''):
         """Create a new session for user"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             import uuid
             session_token = str(uuid.uuid4())
@@ -539,6 +590,9 @@ class SessionManager:
 
     def validate_session(self, token):
         """Validate JWT session token"""
+        if not self._check_db_connection():
+            return {'valid': False, 'error': 'Database not configured'}
+
         try:
             import jwt
             payload = jwt.decode(token, self.jwt_secret, algorithms=['HS256'])
@@ -571,11 +625,14 @@ class SessionManager:
 
     def destroy_session(self, user_id, session_token):
         """Destroy user session"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
             c.execute('UPDATE user_sessions SET is_active = 0 WHERE user_id = %s AND session_token = %s',
-                     (user_id, session_token))
+                      (user_id, session_token))
             conn.commit()
             conn.close()
 
