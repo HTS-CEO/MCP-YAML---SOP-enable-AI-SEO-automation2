@@ -103,10 +103,9 @@ def settings():
     return render_template('settings.html')
 
 @app.route('/admin')
-@admin_required
-def admin():
-    users = user_manager.get_all_users()
-    return render_template('admin_dashboard.html', users=users)
+def admin_redirect():
+    """Redirect /admin to /admin/login"""
+    return redirect(url_for('auth.admin_login'))
 
 @app.route('/admin/login')
 def admin_login():
