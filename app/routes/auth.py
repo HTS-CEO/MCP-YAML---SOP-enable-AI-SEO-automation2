@@ -64,6 +64,13 @@ def login():
         flash(result['error'], 'error')
         return redirect(url_for('auth.login'))
 
+    # If database is not configured, show a user-friendly message
+    if result.get('error') == 'Database not configured':
+        if request.is_json:
+            return jsonify({'error': 'Login is currently unavailable. Please contact the administrator to set up the database.'}), 503
+        flash('Login is currently unavailable. Please contact the administrator to set up the database.', 'error')
+        return redirect(url_for('auth.login'))
+
     # Create session
     session_result = session_manager.create_session(
         result['user']['id'],
@@ -144,6 +151,13 @@ def register():
         if request.is_json:
             return jsonify({'error': result['error']}), 400
         flash(result['error'], 'error')
+        return redirect(url_for('auth.register'))
+
+    # If database is not configured, show a user-friendly message
+    if result.get('error') == 'Database not configured':
+        if request.is_json:
+            return jsonify({'error': 'Registration is currently unavailable. Please contact the administrator to set up the database.'}), 503
+        flash('Registration is currently unavailable. Please contact the administrator to set up the database.', 'error')
         return redirect(url_for('auth.register'))
 
     if request.is_json:
