@@ -338,28 +338,292 @@ def admin_dashboard():
         return render_template('admin_dashboard.html', users=users)
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {str(e)}")
-        # Return simple HTML error instead of template
+        # Return proper admin dashboard with setup message
         return f"""
         <!DOCTYPE html>
-        <html>
+        <html lang="en">
         <head>
-            <title>Admin Dashboard Error</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Admin Dashboard - SEO Automation System</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 40px; }}
-                .error {{ color: #d32f2f; background: #ffebee; padding: 20px; border-radius: 4px; }}
+                body {{
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                    color: #f8fafc;
+                    margin: 0;
+                    padding: 40px;
+                }}
+                .container {{
+                    max-width: 1200px;
+                    margin: 0 auto;
+                }}
+                .header {{
+                    text-align: center;
+                    margin-bottom: 40px;
+                }}
+                .logo {{
+                    font-size: 32px;
+                    font-weight: bold;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }}
+                .setup-card {{
+                    background: rgba(30, 41, 59, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 15px;
+                    padding: 30px;
+                    text-align: center;
+                    margin-bottom: 30px;
+                }}
+                .setup-icon {{
+                    font-size: 48px;
+                    color: #f59e0b;
+                    margin-bottom: 20px;
+                }}
+                .setup-title {{
+                    font-size: 24px;
+                    color: #f59e0b;
+                    margin-bottom: 15px;
+                }}
+                .setup-message {{
+                    color: #94a3b8;
+                    margin-bottom: 20px;
+                    line-height: 1.6;
+                }}
+                .stats-grid {{
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 20px;
+                    margin-bottom: 30px;
+                }}
+                .stat-card {{
+                    background: rgba(30, 41, 59, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 15px;
+                    padding: 25px;
+                    text-align: center;
+                    transition: all 0.3s ease;
+                }}
+                .stat-card:hover {{
+                    transform: translateY(-5px);
+                    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+                }}
+                .stat-icon {{
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 15px;
+                    font-size: 20px;
+                    color: white;
+                }}
+                .stat-value {{
+                    font-size: 28px;
+                    font-weight: 700;
+                    margin-bottom: 5px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }}
+                .stat-label {{
+                    color: #94a3b8;
+                    font-size: 14px;
+                }}
+                .actions-grid {{
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 20px;
+                }}
+                .action-card {{
+                    background: rgba(30, 41, 59, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 15px;
+                    padding: 25px;
+                }}
+                .action-title {{
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: #6366f1;
+                    margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }}
+                .action-item {{
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    padding: 15px;
+                    background: rgba(99, 102, 241, 0.1);
+                    border-radius: 10px;
+                    margin-bottom: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    text-decoration: none;
+                    color: inherit;
+                }}
+                .action-item:hover {{
+                    background: rgba(99, 102, 241, 0.2);
+                    transform: translateX(5px);
+                }}
+                .action-icon {{
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #6366f1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 16px;
+                }}
+                .logout-btn {{
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 12px 24px;
+                    background: linear-gradient(135deg, #ef4444, #dc2626);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                    margin-top: 20px;
+                }}
+                .logout-btn:hover {{
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+                }}
             </style>
         </head>
         <body>
-            <h1>Admin Dashboard</h1>
-            <div class="error">
-                <h2>Error Loading Dashboard</h2>
-                <p>An unexpected error occurred while loading the admin dashboard.</p>
-                <p>The database may not be configured yet. Please contact the administrator.</p>
-                <p><a href="/admin/logout">Logout</a></p>
+            <div class="container">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-shield-alt"></i> Admin Panel
+                    </div>
+                    <h1>Admin Dashboard</h1>
+                </div>
+
+                <div class="setup-card">
+                    <div class="setup-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h2 class="setup-title">System Setup Required</h2>
+                    <p class="setup-message">
+                        The admin dashboard is currently unable to load because the database connection needs to be configured.
+                        Please set up the DATABASE_URL environment variable to connect to your PostgreSQL database.
+                    </p>
+                    <p class="setup-message">
+                        Once the database is configured, this dashboard will provide full administrative controls including user management,
+                        system monitoring, and configuration options.
+                    </p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Active API Keys</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="stat-value">Setup</div>
+                        <div class="stat-label">System Status</div>
+                    </div>
+                </div>
+
+                <div class="actions-grid">
+                    <div class="action-card">
+                        <h3 class="action-title">
+                            <i class="fas fa-cog"></i> System Configuration
+                        </h3>
+                        <a href="/admin/api-keys" class="action-item">
+                            <div class="action-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div>
+                                <strong>Configure API Keys</strong>
+                                <br><small>Set up system-wide API keys for external services</small>
+                            </div>
+                        </a>
+                        <div class="action-item" style="cursor: not-allowed; opacity: 0.6;">
+                            <div class="action-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <strong>User Management</strong>
+                                <br><small>Available after database setup</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-card">
+                        <h3 class="action-title">
+                            <i class="fas fa-info-circle"></i> System Information
+                        </h3>
+                        <div class="action-item" style="cursor: default;">
+                            <div class="action-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div>
+                                <strong>Database Status</strong>
+                                <br><small>Not configured - setup required</small>
+                            </div>
+                        </div>
+                        <div class="action-item" style="cursor: default;">
+                            <div class="action-icon">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div>
+                                <strong>Background Tasks</strong>
+                                <br><small>Waiting for database configuration</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="/admin/logout" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
             </div>
         </body>
         </html>
-        """, 500
+        """, 200
 
 @auth_bp.route('/admin')
 def admin_login_redirect():
