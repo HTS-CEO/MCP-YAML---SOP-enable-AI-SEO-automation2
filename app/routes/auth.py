@@ -19,8 +19,13 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.admin_login'))
 
+        # Check if it's admin session (from .env credentials)
+        if session.get('role') == 'admin':
+            return f(*args, **kwargs)
+
+        # Check database user role
         user = user_manager.get_user_by_id(session['user_id'])
         if not user or user['role'] != 'admin':
             flash('Admin access required', 'error')
@@ -170,18 +175,26 @@ def register():
 @login_required
 def logout():
     user_id = session.get('user_id')
-    if user_id:
+    if user_id and user_id != 'admin':  # Don't try to destroy admin sessions in DB
         # Destroy session in database
         session_token = session.get('session_token')
         if session_token:
             session_manager.destroy_session(user_id, session_token)
 
-        logger.info(f"User logged out: {session.get('username')}")
+    logger.info(f"User logged out: {session.get('username')}")
 
     # Clear Flask session
     session.clear()
     flash('Logged out successfully', 'success')
     return redirect(url_for('auth.login'))
+
+@auth_bp.route('/admin/logout')
+def admin_logout():
+    """Admin logout"""
+    logger.info(f"Admin logged out: {session.get('username')}")
+    session.clear()
+    flash('Admin logged out successfully', 'success')
+    return redirect(url_for('auth.admin_login'))
 
 @auth_bp.route('/dashboard')
 @login_required
@@ -289,6 +302,30 @@ def delete_api_key(service_name):
         return jsonify({'error': 'An unexpected error occurred'}), 500
 
 # Admin Routes
+@auth_bp.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Separate admin login form"""
+    if request.method == 'GET':
+        return render_template('admin_login.html')
+
+    # Get credentials from .env
+    admin_username = os.getenv('ADMIN_USERNAME', 'admin')
+    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    if username == admin_username and password == admin_password:
+        # Create admin session
+        session['user_id'] = 'admin'
+        session['username'] = admin_username
+        session['role'] = 'admin'
+        logger.info(f"Admin logged in: {admin_username}")
+        return redirect(url_for('auth.admin_dashboard'))
+    else:
+        flash('Invalid admin credentials', 'error')
+        return redirect(url_for('auth.admin_login'))
+
 @auth_bp.route('/admin')
 @admin_required
 def admin_dashboard():
