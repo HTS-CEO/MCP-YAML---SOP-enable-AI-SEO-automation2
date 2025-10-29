@@ -334,7 +334,8 @@ def admin_dashboard():
         return render_template('admin_dashboard.html', users=users)
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {str(e)}")
-        return jsonify({'error': 'An unexpected error occurred'}), 500
+        # Return HTML error page instead of JSON for admin dashboard
+        return render_template('error.html', error_message='An unexpected error occurred while loading the admin dashboard.'), 500
 
 @auth_bp.route('/admin/users')
 @admin_required
