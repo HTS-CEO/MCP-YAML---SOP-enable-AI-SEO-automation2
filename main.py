@@ -47,7 +47,11 @@ Session(app)
 logger = setup_logger()
 
 # Initialize database (now handled by models.py)
-db_manager  # This will initialize the database
+try:
+    db_manager  # This will initialize the database
+except Exception as e:
+    logger.error(f"Database initialization failed: {str(e)}")
+    # Continue without database for now
 
 # Register blueprints
 app.register_blueprint(blog_bp, url_prefix='/api')
