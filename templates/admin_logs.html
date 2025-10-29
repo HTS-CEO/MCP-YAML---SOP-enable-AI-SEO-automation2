@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs - SEO Automation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #1e293b;
+            --dark-light: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 30px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999;
+            transition: left 0.3s ease;
+        }
+
+        .burger-menu {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .burger-line {
+            width: 25px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 20px;
+            flex: 1;
+            max-width: 500px;
+            margin-left: 20px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            width: 100%;
+            margin-left: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn, .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-btn:hover, .profile-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 30px;
+            min-height: calc(100vh - var(--header-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logs-container {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select, .filter-input {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            outline: none;
+            font-size: 14px;
+        }
+
+        .filter-input {
+            min-width: 200px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .logs-table th, .logs-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logs-table th {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logs-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .log-level {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .level-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .level-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .level-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .level-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .log-timestamp {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .log-message {
+            max-width: 400px;
+            word-wrap: break-word;
+        }
+
+        .log-details {
+            font-size: 12px;
+            color: var(--text-muted);
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover, .pagination-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .log-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .stat-info { color: var(--info); }
+        .stat-warning { color: var(--warning); }
+        .stat-error { color: var(--danger); }
+        .stat-success { color: var(--success); }
+
+        .log-entry-expanded {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .log-details-full {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 0px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+
+            .header {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .filters {
+                flex-wrap: wrap;
+            }
+
+            .logs-table {
+                font-size: 12px;
+            }
+
+            .logs-table th, .logs-table td {
+                padding: 8px;
+            }
+
+            .log-message {
+                max-width: 150px;
+            }
+
+            .log-details {
+                max-width: 100px;
+            }
+
+            .log-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i> Admin Panel
+        </div>
+        <ul class="menu">
+            <li class="menu-item">
+                <a class="menu-link" href="/admin">
+                    <i class="fas fa-tachometer-alt menu-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/users">
+                    <i class="fas fa-users menu-icon"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/api-keys">
+                    <i class="fas fa-key menu-icon"></i>
+                    <span>API Keys</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link active" href="/admin/logs">
+                    <i class="fas fa-file-alt menu-icon"></i>
+                    <span>System Logs</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/settings">
+                    <i class="fas fa-cog menu-icon"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="burger-menu" id="burgerMenu">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search logs...">
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">5</span>
+            </button>
+            <button class="profile-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">System Logs</h1>
+
+        <!-- Log Statistics -->
+        <div class="log-stats">
+            <div class="stat-card">
+                <div class="stat-value stat-info">1,247</div>
+                <div class="stat-label">Total Logs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-info">892</div>
+                <div class="stat-label">Info Logs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-warning">156</div>
+                <div class="stat-label">Warnings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-error">23</div>
+                <div class="stat-label">Errors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-success">176</div>
+                <div class="stat-label">Success Logs</div>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-list"></i>
+                    Recent Activity Logs
+                </h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="refreshLogs()">
+                        <i class="fas fa-sync"></i>
+                        Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="exportLogs()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            <div class="filters">
+                <select class="filter-select" id="levelFilter">
+                    <option value="">All Levels</option>
+                    <option value="INFO">Info</option>
+                    <option value="WARNING">Warning</option>
+                    <option value="ERROR">Error</option>
+                    <option value="SUCCESS">Success</option>
+                </select>
+                <select class="filter-select" id="categoryFilter">
+                    <option value="">All Categories</option>
+                    <option value="auth">Authentication</option>
+                    <option value="api">API Calls</option>
+                    <option value="user">User Actions</option>
+                    <option value="system">System</option>
+                    <option value="seo">SEO Tasks</option>
+                </select>
+                <input type="datetime-local" class="filter-input" id="dateFilter" placeholder="Filter by date">
+                <input type="text" class="filter-input" id="searchFilter" placeholder="Search logs...">
+            </div>
+
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Level</th>
+                        <th>Category</th>
+                        <th>Message</th>
+                        <th>Details</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:50:01</td>
+                        <td><span class="log-level level-info">INFO</span></td>
+                        <td>System</td>
+                        <td class="log-message">User logged in successfully</td>
+                        <td class="log-details">User: admin, IP: 127.0.0.1</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:49:54</td>
+                        <td><span class="log-level level-success">SUCCESS</span></td>
+                        <td>API</td>
+                        <td class="log-message">Blog post generated and published</td>
+                        <td class="log-details">Post ID: 123, Keywords: SEO tools</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:48:25</td>
+                        <td><span class="log-level level-info">INFO</span></td>
+                        <td>User</td>
+                        <td class="log-message">User profile updated</td>
+                        <td class="log-details">User ID: 5, Field: email</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:46:15</td>
+                        <td><span class="log-level level-success">SUCCESS</span></td>
+                        <td>SEO</td>
+                        <td class="log-message">Keyword ranking check completed</td>
+                        <td class="log-details">Keywords checked: 150, Improved: 12</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:44:38</td>
+                        <td><span class="log-level level-warning">WARNING</span></td>
+                        <td>API</td>
+                        <td class="log-message">Rate limit approaching</td>
+                        <td class="log-details">Service: OpenAI, Remaining: 45%</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:41:45</td>
+                        <td><span class="log-level level-error">ERROR</span></td>
+                        <td>System</td>
+                        <td class="log-message">Database connection timeout</td>
+                        <td class="log-details">Connection pool exhausted</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:40:06</td>
+                        <td><span class="log-level level-info">INFO</span></td>
+                        <td>System</td>
+                        <td class="log-message">Background scheduler started</td>
+                        <td class="log-details">Tasks: ranking_check, gbp_post, reports</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="log-timestamp">2025-10-25 11:39:08</td>
+                        <td><span class="log-level level-success">SUCCESS</span></td>
+                        <td>Auth</td>
+                        <td class="log-message">New user registered</td>
+                        <td class="log-details">User: john_doe, Email: john@example.com</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="viewLogDetails(this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <button class="pagination-btn" disabled>&laquo; Previous</button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">4</button>
+                <button class="pagination-btn">5</button>
+                <button class="pagination-btn">Next &raquo;</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Log Details Modal -->
+    <div class="modal" id="logModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Details</h3>
+                <button class="close-modal" onclick="closeLogModal()">×</button>
+            </div>
+
+            <div id="logDetailsContent">
+                <!-- Log details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Sidebar
+        const burgerMenu = document.getElementById('burgerMenu');
+        const sidebar = document.getElementById('sidebar');
+
+        burgerMenu.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Log management functions
+        function viewLogDetails(button) {
+            const row = button.closest('tr');
+            const timestamp = row.cells[0].textContent;
+            const level = row.cells[1].textContent;
+            const category = row.cells[2].textContent;
+            const message = row.cells[3].textContent;
+            const details = row.cells[4].textContent;
+
+            const detailsHTML = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Timestamp:</strong> ${timestamp}<br>
+                    <strong>Level:</strong> ${level}<br>
+                    <strong>Category:</strong> ${category}<br>
+                    <strong>Message:</strong> ${message}<br>
+                    <strong>Details:</strong> ${details}
+                </div>
+
+                <div class="log-details-full">
+Stack Trace:
+  File "/app/routes/auth.py", line 45, in login
+    user = authenticate_user(username, password)
+  File "/app/models/user.py", line 123, in authenticate_user
+    return validate_credentials(username, password)
+  File "/app/utils/security.py", line 78, in validate_credentials
+    if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
+        raise AuthenticationError("Invalid credentials")
+
+Additional Context:
+- User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+- IP Address: 192.168.1.100
+- Session ID: abc123def456
+- Request ID: req_789xyz
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="closeLogModal()">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                    <button class="btn btn-primary" onclick="alert('Export functionality coming soon!')">
+                        <i class="fas fa-download"></i>
+                        Export Log
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('logDetailsContent').innerHTML = detailsHTML;
+            document.getElementById('logModal').classList.add('active');
+        }
+
+        function closeLogModal() {
+            document.getElementById('logModal').classList.remove('active');
+        }
+
+        function refreshLogs() {
+            // In a real implementation, fetch fresh logs from API
+            alert('Refreshing logs...');
+            location.reload();
+        }
+
+        function exportLogs() {
+            alert('Export functionality - logs will be downloaded as CSV');
+        }
+
+        // Filter functionality
+        document.getElementById('levelFilter').addEventListener('change', filterLogs);
+        document.getElementById('categoryFilter').addEventListener('change', filterLogs);
+        document.getElementById('dateFilter').addEventListener('change', filterLogs);
+        document.getElementById('searchFilter').addEventListener('input', filterLogs);
+
+        function filterLogs() {
+            const levelFilter = document.getElementById('levelFilter').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+            const rows = document.querySelectorAll('.logs-table tbody tr');
+
+            rows.forEach(row => {
+                const level = row.cells[1].textContent.toLowerCase();
+                const category = row.cells[2].textContent.toLowerCase();
+                const message = row.cells[3].textContent.toLowerCase();
+                const details = row.cells[4].textContent.toLowerCase();
+
+                const matchesLevel = !levelFilter || level.includes(levelFilter);
+                const matchesCategory = !categoryFilter || category.includes(categoryFilter);
+                const matchesSearch = !searchFilter || message.includes(searchFilter) || details.includes(searchFilter);
+
+                if (matchesLevel && matchesCategory && matchesSearch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Auto-refresh logs every 30 seconds
+        setInterval(() => {
+            // In a real implementation, check for new logs
+            console.log('Checking for new logs...');
+        }, 30000);
+    </script>
+</body>
+</html>

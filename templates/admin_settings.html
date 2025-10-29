@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - SEO Automation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #1e293b;
+            --dark-light: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 30px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999;
+            transition: left 0.3s ease;
+        }
+
+        .burger-menu {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .burger-line {
+            width: 25px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 20px;
+            flex: 1;
+            max-width: 500px;
+            margin-left: 20px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            width: 100%;
+            margin-left: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn, .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-btn:hover, .profile-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 30px;
+            min-height: calc(100vh - var(--header-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .settings-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .settings-main {
+            display: grid;
+            gap: 30px;
+        }
+
+        .settings-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-sidebar {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            height: fit-content;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+
+        .setting-description {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            left: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text);
+            outline: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .system-status {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            color: var(--text-muted);
+        }
+
+        .status-value {
+            font-weight: 500;
+        }
+
+        .status-healthy { color: var(--success); }
+        .status-warning { color: var(--warning); }
+        .status-error { color: var(--danger); }
+
+        .quick-actions {
+            margin-bottom: 20px;
+        }
+
+        .quick-actions h4 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .action-btn {
+            width: 100%;
+            margin-bottom: 10px;
+            justify-content: flex-start;
+        }
+
+        .backup-section {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .backup-section h4 {
+            color: var(--warning);
+            margin-bottom: 10px;
+        }
+
+        .backup-info {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .close-modal {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 0px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+
+            .header {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .settings-container {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i> Admin Panel
+        </div>
+        <ul class="menu">
+            <li class="menu-item">
+                <a class="menu-link" href="/admin">
+                    <i class="fas fa-tachometer-alt menu-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/users">
+                    <i class="fas fa-users menu-icon"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/api-keys">
+                    <i class="fas fa-key menu-icon"></i>
+                    <span>API Keys</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/logs">
+                    <i class="fas fa-file-alt menu-icon"></i>
+                    <span>System Logs</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link active" href="/admin/settings">
+                    <i class="fas fa-cog menu-icon"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="burger-menu" id="burgerMenu">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search settings...">
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="profile-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">System Settings</h1>
+
+        <div class="settings-container">
+            <!-- Main Settings -->
+            <div class="settings-main">
+                <!-- General Settings -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-cogs"></i>
+                            General Settings
+                        </h2>
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-label">System Maintenance Mode</div>
+                            <div class="setting-description">Enable maintenance mode to prevent user access</div>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch" onclick="toggleSetting(this)">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-label">Email Notifications</div>
+                            <div class="setting-description">Send email notifications for important events</div>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch active" onclick="toggleSetting(this)">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-label">Auto-Backup</div>
+                            <div class="setting-description">Automatically backup system data daily</div>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch active" onclick="toggleSetting(this)">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-label">Debug Mode</div>
+                            <div class="setting-description">Enable detailed logging for troubleshooting</div>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch" onclick="toggleSetting(this)">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO Automation Settings -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-search"></i>
+                            SEO Automation Settings
+                        </h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Keyword Check Interval (hours)</label>
+                        <select>
+                            <option value="1">Every hour</option>
+                            <option value="6" selected>Every 6 hours</option>
+                            <option value="12">Every 12 hours</option>
+                            <option value="24">Daily</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-chart-line"></i> Content Optimization Threshold</label>
+                        <select>
+                            <option value="10">Top 10 positions</option>
+                            <option value="20" selected>Top 20 positions</option>
+                            <option value="50">Top 50 positions</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-file-alt"></i> Default Blog Post Length (words)</label>
+                        <select>
+                            <option value="800">800-1000 words</option>
+                            <option value="1000" selected>1000-1200 words</option>
+                            <option value="1200">1200-1500 words</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-building"></i> GBP Post Frequency</label>
+                        <select>
+                            <option value="1">Daily</option>
+                            <option value="3" selected>3 times per week</option>
+                            <option value="7">Weekly</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Security Settings
+                        </h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Session Timeout (minutes)</label>
+                        <select>
+                            <option value="30">30 minutes</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="120">2 hours</option>
+                            <option value="480">8 hours</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Password Policy</label>
+                        <select>
+                            <option value="basic">Basic (6+ characters)</option>
+                            <option value="medium" selected>Medium (8+ chars, mixed case)</option>
+                            <option value="strong">Strong (12+ chars, special chars)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-user-times"></i> Failed Login Attempts</label>
+                        <select>
+                            <option value="3">3 attempts</option>
+                            <option value="5" selected>5 attempts</option>
+                            <option value="10">10 attempts</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-bell"></i> Slack Webhook URL</label>
+                        <input type="url" placeholder="https://hooks.slack.com/services/..." value="https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK">
+                    </div>
+                </div>
+
+                <!-- Database Settings -->
+                <div class="settings-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-database"></i>
+                            Database Settings
+                        </h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-hdd"></i> Database Type</label>
+                        <select>
+                            <option value="sqlite" selected>SQLite (Local)</option>
+                            <option value="postgresql">PostgreSQL</option>
+                            <option value="mysql">MySQL</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> Backup Frequency</label>
+                        <select>
+                            <option value="daily" selected>Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-folder"></i> Backup Retention (days)</label>
+                        <input type="number" value="30" min="1" max="365">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="settings-sidebar">
+                <div class="system-status">
+                    <h3 style="color: var(--secondary); margin-bottom: 15px;">
+                        <i class="fas fa-info-circle"></i> System Status
+                    </h3>
+
+                    <div class="status-item">
+                        <span class="status-label">Database</span>
+                        <span class="status-value status-healthy">Healthy</span>
+                    </div>
+
+                    <div class="status-item">
+                        <span class="status-label">Background Tasks</span>
+                        <span class="status-value status-healthy">Running</span>
+                    </div>
+
+                    <div class="status-item">
+                        <span class="status-label">API Services</span>
+                        <span class="status-value status-healthy">Operational</span>
+                    </div>
+
+                    <div class="status-item">
+                        <span class="status-label">Disk Usage</span>
+                        <span class="status-value status-healthy">45%</span>
+                    </div>
+
+                    <div class="status-item">
+                        <span class="status-label">Memory Usage</span>
+                        <span class="status-value status-warning">78%</span>
+                    </div>
+
+                    <div class="status-item">
+                        <span class="status-label">Last Backup</span>
+                        <span class="status-value status-healthy">2 hours ago</span>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+
+                    <button class="btn btn-secondary action-btn" onclick="clearCache()">
+                        <i class="fas fa-trash"></i>
+                        Clear System Cache
+                    </button>
+
+                    <button class="btn btn-secondary action-btn" onclick="restartServices()">
+                        <i class="fas fa-sync"></i>
+                        Restart Services
+                    </button>
+
+                    <button class="btn btn-secondary action-btn" onclick="runDiagnostics()">
+                        <i class="fas fa-stethoscope"></i>
+                        Run Diagnostics
+                    </button>
+
+                    <button class="btn btn-danger action-btn" onclick="resetSettings()">
+                        <i class="fas fa-undo"></i>
+                        Reset to Defaults
+                    </button>
+                </div>
+
+                <div class="backup-section">
+                    <h4><i class="fas fa-download"></i> System Backup</h4>
+                    <div class="backup-info">
+                        Last backup: 2 hours ago<br>
+                        Size: 45.2 MB<br>
+                        Status: Successful
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="createBackup()">
+                        <i class="fas fa-download"></i>
+                        Create Backup Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Toggle Sidebar
+        const burgerMenu = document.getElementById('burgerMenu');
+        const sidebar = document.getElementById('sidebar');
+
+        burgerMenu.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Settings functions
+        function toggleSetting(element) {
+            element.classList.toggle('active');
+            // In a real implementation, save setting to backend
+            console.log('Setting toggled:', element.classList.contains('active'));
+        }
+
+        function saveSettings() {
+            alert('Settings saved successfully!');
+        }
+
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the system cache? This may temporarily slow down the system.')) {
+                alert('System cache cleared successfully!');
+            }
+        }
+
+        function restartServices() {
+            if (confirm('Are you sure you want to restart all services? This may cause temporary downtime.')) {
+                alert('Services restarted successfully!');
+            }
+        }
+
+        function runDiagnostics() {
+            alert('Running system diagnostics... All systems operational!');
+        }
+
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to default values? This action cannot be undone.')) {
+                alert('Settings reset to defaults!');
+                location.reload();
+            }
+        }
+
+        function createBackup() {
+            alert('Creating system backup... Backup completed successfully!');
+        }
+    </script>
+</body>
+</html>

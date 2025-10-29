@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Keys - SEO Automation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --dark-light: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 30px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999;
+            transition: left 0.3s ease;
+        }
+
+        .burger-menu {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .burger-line {
+            width: 25px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 20px;
+            flex: 1;
+            max-width: 500px;
+            margin-left: 20px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            width: 100%;
+            margin-left: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn, .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-btn:hover, .profile-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 30px;
+            min-height: calc(100vh - var(--header-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .api-keys-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .api-keys-main {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .api-keys-sidebar {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .api-key-item {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .api-key-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .api-key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .api-key-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .api-key-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .api-key-value {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .api-key-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .api-key-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text);
+            outline: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .flash-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .flash-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .service-info {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .service-info h4 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .service-info p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            color: var(--primary);
+        }
+
+        .close-modal {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 0px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+
+            .header {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .api-keys-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-bolt"></i> SEO Automation
+        </div>
+        <ul class="menu">
+            <li class="menu-item">
+                <a class="menu-link" href="/dashboard">
+                    <i class="fas fa-chart-line menu-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/blog">
+                    <i class="fas fa-pen-fancy menu-icon"></i>
+                    <span>Generate Blog</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/reoptimize">
+                    <i class="fas fa-sync-alt menu-icon"></i>
+                    <span>Re-optimize Posts</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/gbp">
+                    <i class="fas fa-building menu-icon"></i>
+                    <span>Google Business</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/analytics">
+                    <i class="fas fa-chart-bar menu-icon"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/reports">
+                    <i class="fas fa-file-alt menu-icon"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link active" href="/api-keys">
+                    <i class="fas fa-key menu-icon"></i>
+                    <span>API Keys</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/profile">
+                    <i class="fas fa-user menu-icon"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+            {% if user.role == 'admin' %}
+            <li class="menu-item">
+                <a class="menu-link" href="/admin">
+                    <i class="fas fa-cog menu-icon"></i>
+                    <span>Admin Panel</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </aside>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="burger-menu" id="burgerMenu">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search API keys...">
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="profile-btn" onclick="window.location.href='/profile'">
+                <i class="fas fa-user"></i>
+            </button>
+            <a href="/logout" class="profile-btn" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">API Keys Management</h1>
+
+        <div class="api-keys-container">
+            <!-- Main Content -->
+            <div class="api-keys-main">
+                <h2 class="section-title">
+                    <i class="fas fa-key"></i>
+                    Your API Keys
+                </h2>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-message flash-{{ 'success' if category == 'success' else 'error' }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div id="apiKeysList">
+                    <!-- API keys will be loaded here -->
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <i class="fas fa-key"></i>
+                    <h3>No API Keys Found</h3>
+                    <p>You haven't configured any API keys yet. Add your first key to get started.</p>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="api-keys-sidebar">
+                <h2 class="section-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Add New API Key
+                </h2>
+
+                <form id="addApiKeyForm" onsubmit="addApiKey(event)">
+                    <div class="form-group">
+                        <label>Service Name</label>
+                        <select name="service_name" required>
+                            <option value="">Select a service...</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="semrush">SEMrush</option>
+                            <option value="wordpress">WordPress</option>
+                            <option value="google_analytics">Google Analytics</option>
+                            <option value="google_business">Google Business Profile</option>
+                            <option value="slack">Slack</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" name="api_key" placeholder="Enter your API key" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-plus"></i>
+                        Add API Key
+                    </button>
+                </form>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-info-circle"></i> Security Notice</h4>
+                    <p>Your API keys are encrypted and stored securely. They are only used for the services you configure and are never shared with third parties.</p>
+                </div>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-question-circle"></i> Need Help?</h4>
+                    <p>Check our documentation for guides on how to obtain API keys for each service.</p>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="alert('Documentation coming soon!')">
+                        <i class="fas fa-book"></i>
+                        View Documentation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit API Key Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit API Key</h3>
+                <button class="close-modal" onclick="closeEditModal()">×</button>
+            </div>
+
+            <form id="editApiKeyForm" onsubmit="updateApiKey(event)">
+                <input type="hidden" name="service_name" id="editServiceName">
+
+                <div class="form-group">
+                    <label>Service</label>
+                    <input type="text" id="editServiceDisplay" readonly style="background: rgba(255, 255, 255, 0.03);">
+                </div>
+
+                <div class="form-group">
+                    <label>New API Key</label>
+                    <input type="password" name="api_key" id="editApiKey" placeholder="Enter new API key" required>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Update Key
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = window.location.origin;
+
+        // Toggle Sidebar
+        const burgerMenu = document.getElementById('burgerMenu');
+        const sidebar = document.getElementById('sidebar');
+
+        burgerMenu.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Load API keys on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadApiKeys();
+        });
+
+        // Load API keys
+        async function loadApiKeys() {
+            try {
+                const response = await fetch(`${API_BASE}/api/user/api-keys`);
+
+                if (response.ok) {
+                    const apiKeys = await response.json();
+                    displayApiKeys(apiKeys);
+                } else if (response.status === 401) {
+                    // Redirect to login if not authenticated
+                    window.location.href = '/login';
+                } else {
+                    console.error('Failed to load API keys');
+                    showMessage('Failed to load API keys. Please try again.', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading API keys:', error);
+                showMessage('Network error. Please check your connection.', 'error');
+            }
+        }
+
+        // Display API keys
+        function displayApiKeys(apiKeys) {
+            const container = document.getElementById('apiKeysList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (!apiKeys || apiKeys.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            container.innerHTML = apiKeys.map(key => `
+                <div class="api-key-item">
+                    <div class="api-key-header">
+                        <div class="api-key-name">${formatServiceName(key.service_name)}</div>
+                        <div class="api-key-status status-${key.is_active ? 'active' : 'inactive'}">
+                            ${key.is_active ? 'Active' : 'Inactive'}
+                        </div>
+                    </div>
+
+                    <div class="api-key-value">
+                        ${maskApiKey(key.api_key)}
+                    </div>
+
+                    <div class="api-key-meta">
+                        <div>Created: ${new Date(key.created_at).toLocaleDateString()}</div>
+                        <div>Usage: ${key.usage_count || 0} calls</div>
+                    </div>
+
+                    <div class="api-key-actions">
+                        <button class="btn btn-secondary" onclick="editApiKey('${key.service_name}', '${key.api_key}')">
+                            <i class="fas fa-edit"></i>
+                            Edit
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteApiKey('${key.service_name}')">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Format service name for display
+        function formatServiceName(serviceName) {
+            const names = {
+                'openai': 'OpenAI',
+                'semrush': 'SEMrush',
+                'wordpress': 'WordPress',
+                'google_analytics': 'Google Analytics',
+                'google_business': 'Google Business Profile',
+                'slack': 'Slack'
+            };
+            return names[serviceName] || serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
+        }
+
+        // Mask API key for display
+        function maskApiKey(apiKey) {
+            if (!apiKey || apiKey.length < 8) return apiKey;
+            return apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4);
+        }
+
+        // Add new API key
+        async function addApiKey(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch(`${API_BASE}/api-keys`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        // Let browser set Content-Type for FormData
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('API key added successfully!', 'success');
+                    event.target.reset();
+                    loadApiKeys();
+                } else if (response.status === 401) {
+                    window.location.href = '/login';
+                } else {
+                    showMessage(result.error || 'Failed to add API key', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Edit API key
+        function editApiKey(serviceName, currentKey) {
+            document.getElementById('editServiceName').value = serviceName;
+            document.getElementById('editServiceDisplay').value = formatServiceName(serviceName);
+            document.getElementById('editApiKey').value = '';
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            document.getElementById('editApiKeyForm').reset();
+        }
+
+        // Update API key
+        async function updateApiKey(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch(`${API_BASE}/api-keys`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('API key updated successfully!', 'success');
+                    closeEditModal();
+                    loadApiKeys();
+                } else {
+                    showMessage(result.error || 'Failed to update API key', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Delete API key
+        async function deleteApiKey(serviceName) {
+            if (!confirm(`Are you sure you want to delete the ${formatServiceName(serviceName)} API key? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api-keys/${serviceName}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('API key deleted successfully!', 'success');
+                    loadApiKeys();
+                } else if (response.status === 401) {
+                    window.location.href = '/login';
+                } else {
+                    showMessage(result.error || 'Failed to delete API key', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // Show message
+        function showMessage(message, type = 'info') {
+            // Create a flash message element
+            const flashContainer = document.createElement('div');
+            flashContainer.className = `flash-message flash-${type}`;
+            flashContainer.textContent = message;
+
+            // Insert at the top of the main content
+            const mainContent = document.querySelector('.api-keys-main');
+            mainContent.insertBefore(flashContainer, mainContent.firstChild);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (flashContainer.parentNode) {
+                    flashContainer.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

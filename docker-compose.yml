@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  seo-automation:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=sqlite:///seo_automation.db
+      - SECRET_KEY=your-secret-key-change-in-production
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin123
+      - ADMIN_EMAIL=admin@seoautomation.com
+    volumes:
+      - ./logs:/app/logs
+      - ./seo_automation.db:/app/seo_automation.db
+      - ./flask_session:/app/flask_session
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for session storage and caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    profiles:
+      - with-redis
+
+volumes:
+  redis_data:

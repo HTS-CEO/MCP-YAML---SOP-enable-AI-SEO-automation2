@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Configuration - SEO Automation System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --dark-light: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .logo {
+            padding: 0 30px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .menu-link:hover, .menu-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            left: var(--sidebar-width);
+            top: 0;
+            right: 0;
+            height: var(--header-height);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 999;
+            transition: left 0.3s ease;
+        }
+
+        .burger-menu {
+            display: none;
+            cursor: pointer;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .burger-line {
+            width: 25px;
+            height: 3px;
+            background: var(--text);
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 20px;
+            flex: 1;
+            max-width: 500px;
+            margin-left: 20px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            width: 100%;
+            margin-left: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .notification-btn, .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-btn:hover, .profile-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            border-radius: 50%;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 30px;
+            min-height: calc(100vh - var(--header-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .api-config-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .api-config-main {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .api-config-sidebar {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .env-notice {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .env-notice h4 {
+            color: var(--warning);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .env-notice p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .env-file-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .env-file-preview h5 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .env-content {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.4;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .env-content .comment {
+            color: var(--text-muted);
+        }
+
+        .env-content .key {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .env-content .value {
+            color: var(--success);
+        }
+
+        .service-info {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .service-info h4 {
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .service-info p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .service-info ul {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        .service-info li {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 0px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .burger-menu {
+                display: flex;
+            }
+
+            .header {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .api-config-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i> Admin Panel
+        </div>
+        <ul class="menu">
+            <li class="menu-item">
+                <a class="menu-link" href="/admin">
+                    <i class="fas fa-tachometer-alt menu-icon"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/users">
+                    <i class="fas fa-users menu-icon"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link active" href="/admin/api-keys">
+                    <i class="fas fa-key menu-icon"></i>
+                    <span>API Configuration</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/logs">
+                    <i class="fas fa-file-alt menu-icon"></i>
+                    <span>System Logs</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="/admin/settings">
+                    <i class="fas fa-cog menu-icon"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="burger-menu" id="burgerMenu">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </div>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search configuration...">
+        </div>
+        <div class="header-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="profile-btn" onclick="window.location.href='/logout'">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">API Configuration Management</h1>
+
+        <div class="api-config-container">
+            <!-- Main Content -->
+            <div class="api-config-main">
+                <div class="env-notice">
+                    <h4><i class="fas fa-info-circle"></i> Environment-Based Configuration</h4>
+                    <p>API keys and configuration settings are now managed exclusively through the <code>.env</code> file for enhanced security and consistency. The admin panel no longer provides direct API key management to prevent accidental exposure or misconfiguration.</p>
+                </div>
+
+                <div class="env-file-preview">
+                    <h5><i class="fas fa-file-code"></i> Current .env Configuration</h5>
+                    <div class="env-content">
+<span class="comment"># Database Configuration</span><br>
+<span class="key">DATABASE_URL</span>=<span class="value">sqlite:///seo_automation.db</span><br>
+<span class="key">SECRET_KEY</span>=<span class="value">your-super-secret-key-change-this-in-production</span><br>
+<br>
+<span class="comment"># Admin Credentials</span><br>
+<span class="key">ADMIN_USERNAME</span>=<span class="value">admin</span><br>
+<span class="key">ADMIN_PASSWORD</span>=<span class="value">admin123</span><br>
+<span class="key">ADMIN_EMAIL</span>=<span class="value">admin@seoautomation.com</span><br>
+<br>
+<span class="comment"># Authentication</span><br>
+<span class="key">JWT_SECRET_KEY</span>=<span class="value">your-jwt-secret-key</span><br>
+<br>
+<span class="comment"># Slack Notifications</span><br>
+<span class="key">SLACK_WEBHOOK_URL</span>=<span class="value">https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK</span><br>
+<br>
+<span class="comment"># WordPress Configuration</span><br>
+<span class="key">WP_BASE_URL</span>=<span class="value">https://clientsite.com</span><br>
+<span class="key">WP_USER</span>=<span class="value">automation_agent</span><br>
+<span class="key">WP_APP_PASSWORD</span>=<span class="value">xxxx xxxx xxxx xxxx</span><br>
+<br>
+<span class="comment"># SEMrush API</span><br>
+<span class="key">SEMRUSH_API_KEY</span>=<span class="value">...</span><br>
+<br>
+<span class="comment"># OpenAI API</span><br>
+<span class="key">OPENAI_API_KEY</span>=<span class="value">sk-...</span><br>
+<br>
+<span class="comment"># Google Business Profile</span><br>
+<span class="key">GBP_ACCOUNT_ID</span>=<span class="value">...</span><br>
+<span class="key">GBP_LOCATION_ID</span>=<span class="value">...</span><br>
+<span class="key">GOOGLE_CLIENT_ID</span>=<span class="value">...</span><br>
+<span class="key">GOOGLE_CLIENT_SECRET</span>=<span class="value">...</span><br>
+<span class="key">GOOGLE_REFRESH_TOKEN</span>=<span class="value">...</span><br>
+<br>
+<span class="comment"># Google Analytics 4</span><br>
+<span class="key">GA4_PROPERTY_ID</span>=<span class="value">...</span><br>
+<br>
+<span class="comment"># API Authentication</span><br>
+<span class="key">AUTH_TOKEN</span>=<span class="value">mysecureapitoken</span><br>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="downloadEnvTemplate()">
+                        <i class="fas fa-download"></i>
+                        Download .env Template
+                    </button>
+                    <button class="btn btn-secondary" onclick="showEnvInstructions()">
+                        <i class="fas fa-question-circle"></i>
+                        Setup Instructions
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="api-config-sidebar">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Configuration Guide
+                </h2>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-brain"></i> OpenAI</h4>
+                    <p>Get your API key from OpenAI's platform for AI-powered content generation.</p>
+                    <ul>
+                        <li>Visit: <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></li>
+                        <li>Requires GPT-4 API access</li>
+                        <li>Used for blog writing and optimization</li>
+                    </ul>
+                </div>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-search"></i> SEMrush</h4>
+                    <p>API key for keyword research and ranking monitoring.</p>
+                    <ul>
+                        <li>Visit: <a href="https://www.semrush.com/api/" target="_blank">semrush.com/api</a></li>
+                        <li>Provides organic traffic data</li>
+                        <li>Monitors keyword performance</li>
+                    </ul>
+                </div>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-wordpress"></i> WordPress</h4>
+                    <p>Application password for automated blog publishing.</p>
+                    <ul>
+                        <li>Create app password in WP Admin</li>
+                        <li>Users → Profile → Application Passwords</li>
+                        <li>Requires administrator privileges</li>
+                    </ul>
+                </div>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-chart-line"></i> Google Analytics</h4>
+                    <p>GA4 property access for traffic and conversion data.</p>
+                    <ul>
+                        <li>Google Cloud Console setup required</li>
+                        <li>Enable Analytics Data API</li>
+                        <li>Configure OAuth2 credentials</li>
+                    </ul>
+                </div>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-building"></i> Google Business Profile</h4>
+                    <p>Automated posting to your business profile.</p>
+                    <ul>
+                        <li>Google Business Profile API access</li>
+                        <li>Requires location management permissions</li>
+                        <li>Posts updates and promotions</li>
+                    </ul>
+                </div>
+
+                <div class="service-info">
+                    <h4><i class="fas fa-bell"></i> Slack</h4>
+                    <p>Optional webhook for system notifications and alerts.</p>
+                    <ul>
+                        <li>Create webhook in Slack apps</li>
+                        <li>Add to desired channel</li>
+                        <li>Receives error notifications</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 20px; margin-top: 20px;">
+                    <h4 style="color: var(--warning); margin-bottom: 10px;"><i class="fas fa-shield-alt"></i> Security Best Practices</h4>
+                    <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5;">Never commit .env files to version control. Use strong, unique API keys. Rotate credentials regularly. Monitor API usage for unauthorized access.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Toggle Sidebar
+        const burgerMenu = document.getElementById('burgerMenu');
+        const sidebar = document.getElementById('sidebar');
+
+        burgerMenu.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        function downloadEnvTemplate() {
+            const envContent = `# Database Configuration
+DATABASE_URL=sqlite:///seo_automation.db
+SECRET_KEY=your-super-secret-key-change-this-in-production
+
+# Admin Credentials
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+ADMIN_EMAIL=admin@seoautomation.com
+
+# Authentication
+JWT_SECRET_KEY=your-jwt-secret-key
+
+# Slack Notifications
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
+
+# WordPress Configuration
+WP_BASE_URL=https://yoursite.com
+WP_USER=your_username
+WP_APP_PASSWORD=your_app_password
+
+# SEMrush API
+SEMRUSH_API_KEY=your_semrush_api_key
+
+# OpenAI API
+OPENAI_API_KEY=sk-your_openai_api_key
+
+# Google Business Profile
+GBP_ACCOUNT_ID=your_account_id
+GBP_LOCATION_ID=your_location_id
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REFRESH_TOKEN=your_refresh_token
+
+# Google Analytics 4
+GA4_PROPERTY_ID=your_property_id
+
+# API Authentication
+AUTH_TOKEN=your_secure_api_token
+`;
+
+            const blob = new Blob([envContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '.env';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function showEnvInstructions() {
+            alert(`Environment Setup Instructions:
+
+1. Copy the downloaded .env file to your project root
+2. Replace all placeholder values with your actual API keys
+3. Never commit .env files to version control
+4. Restart the application after configuration changes
+
+For detailed setup guides, check the README.md file.`);
+        }
+    </script>
+</body>
+</html>
