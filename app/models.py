@@ -14,7 +14,8 @@ class DatabaseManager:
     def __init__(self):
         self.database_url = os.getenv('DATABASE_URL')
         if not self.database_url:
-            raise ValueError("DATABASE_URL environment variable is not set. Please configure your database connection.")
+            logger.warning("DATABASE_URL environment variable is not set. Database operations will be disabled.")
+            return
         try:
             self.init_database()
         except Exception as e:
@@ -23,6 +24,8 @@ class DatabaseManager:
             pass
 
     def get_connection(self):
+        if not self.database_url:
+            raise ValueError("Database URL is not configured")
         return psycopg2.connect(self.database_url)
 
     def init_database(self):
