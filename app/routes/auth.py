@@ -327,15 +327,9 @@ def admin_login():
         return redirect(url_for('auth.admin_login'))
 
 @auth_bp.route('/admin')
-@admin_required
-def admin_dashboard():
-    try:
-        users = user_manager.get_all_users()
-        return render_template('admin_dashboard.html', users=users)
-    except Exception as e:
-        logger.error(f"Error loading admin dashboard: {str(e)}")
-        # Return HTML error page instead of JSON for admin dashboard
-        return render_template('error.html', error_message='An unexpected error occurred while loading the admin dashboard.'), 500
+def admin_login_redirect():
+    """Redirect /admin to /admin/login"""
+    return redirect(url_for('auth.admin_login'))
 
 @auth_bp.route('/admin/users')
 @admin_required
