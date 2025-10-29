@@ -764,15 +764,17 @@ def admin_users():
 
                 <div class="setup-card">
                     <div class="setup-icon">
-                        <i class="fas fa-users"></i>
+                        <i class="fas fa-database"></i>
                     </div>
-                    <h2 class="setup-title">User Management Unavailable</h2>
+                    <h2 class="setup-title">Database Not Configured</h2>
                     <p class="setup-message">
-                        The user management system is currently unavailable because the database connection needs to be configured.
-                        Please set up the DATABASE_URL environment variable to connect to your PostgreSQL database.
+                        The DATABASE_URL environment variable is not set. Please configure your PostgreSQL database connection.
                     </p>
                     <p class="setup-message">
-                        Once the database is configured, you'll be able to manage users, view user statistics, and perform administrative tasks.
+                        Create a .env file in your project root with: DATABASE_URL=postgresql://username:password@host:port/database
+                    </p>
+                    <p class="setup-message">
+                        Once configured, you'll be able to manage users, view statistics, and perform all administrative functions.
                     </p>
                 </div>
 
