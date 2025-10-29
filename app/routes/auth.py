@@ -329,8 +329,12 @@ def admin_login():
 @auth_bp.route('/admin')
 @admin_required
 def admin_dashboard():
-    users = user_manager.get_all_users()
-    return render_template('admin_dashboard.html', users=users)
+    try:
+        users = user_manager.get_all_users()
+        return render_template('admin_dashboard.html', users=users)
+    except Exception as e:
+        logger.error(f"Error loading admin dashboard: {str(e)}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500
 
 @auth_bp.route('/admin/users')
 @admin_required
