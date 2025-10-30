@@ -101,15 +101,26 @@ class DatabaseManager:
                 is_active BOOLEAN DEFAULT TRUE
             )''')
 
+            # User Settings
+            c.execute('''CREATE TABLE IF NOT EXISTS user_settings (
+                 id SERIAL PRIMARY KEY,
+                 user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                 setting_key VARCHAR(255) NOT NULL,
+                 setting_value TEXT,
+                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                 UNIQUE(user_id, setting_key)
+             )''')
+
             # Activity Logs
             c.execute('''CREATE TABLE IF NOT EXISTS activity_logs (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users (id),
-                action VARCHAR(255) NOT NULL,
-                details TEXT,
-                ip_address VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
+                 id SERIAL PRIMARY KEY,
+                 user_id INTEGER REFERENCES users (id),
+                 action VARCHAR(255) NOT NULL,
+                 details TEXT,
+                 ip_address VARCHAR(255),
+                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+             )''')
 
 
 
@@ -353,6 +364,98 @@ class UserManager:
         except Exception as e:
             logger.error(f"Error logging activity: {str(e)}")
 
+class UserSettingsManager:
+    def __init__(self):
+        self.db = DatabaseManager()
+
+    def _check_db_connection(self):
+        """Check if database is configured"""
+        if not self.db.database_url:
+            return False
+        return True
+
+    def get_user_settings(self, user_id):
+        """Get user settings"""
+        if not self._check_db_connection():
+            return {}
+
+        try:
+            conn = self.db.get_connection()
+            c = conn.cursor()
+            c.execute('SELECT setting_key, setting_value FROM user_settings WHERE user_id = %s', (user_id,))
+            settings = c.fetchall()
+            conn.close()
+
+            return {setting[0]: setting[1] for setting in settings}
+        except Exception as e:
+            logger.error(f"Error getting user settings: {str(e)}")
+            return {}
+
+    def update_user_setting(self, user_id, setting_key, setting_value):
+        """Update a user setting"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
+        try:
+            conn = self.db.get_connection()
+            c = conn.cursor()
+
+            # Check if setting exists
+            c.execute('SELECT id FROM user_settings WHERE user_id = %s AND setting_key = %s', (user_id, setting_key))
+            existing = c.fetchone()
+
+            if existing:
+                # Update existing setting
+                c.execute('UPDATE user_settings SET setting_value = %s WHERE user_id = %s AND setting_key = %s',
+                         (setting_value, user_id, setting_key))
+            else:
+                # Insert new setting
+                c.execute('INSERT INTO user_settings (user_id, setting_key, setting_value) VALUES (%s, %s, %s)',
+                         (user_id, setting_key, setting_value))
+
+            conn.commit()
+            conn.close()
+
+            logger.info(f"User setting updated: {setting_key} for user {user_id}")
+            return {'success': True}
+
+        except Exception as e:
+            logger.error(f"Error updating user setting: {str(e)}")
+            return {'error': str(e)}
+
+    def update_user_settings_bulk(self, user_id, settings_dict):
+        """Update multiple user settings at once"""
+        if not self._check_db_connection():
+            return {'error': 'Database not configured'}
+
+        try:
+            conn = self.db.get_connection()
+            c = conn.cursor()
+
+            for setting_key, setting_value in settings_dict.items():
+                # Check if setting exists
+                c.execute('SELECT id FROM user_settings WHERE user_id = %s AND setting_key = %s', (user_id, setting_key))
+                existing = c.fetchone()
+
+                if existing:
+                    # Update existing setting
+                    c.execute('UPDATE user_settings SET setting_value = %s WHERE user_id = %s AND setting_key = %s',
+                             (setting_value, user_id, setting_key))
+                else:
+                    # Insert new setting
+                    c.execute('INSERT INTO user_settings (user_id, setting_key, setting_value) VALUES (%s, %s, %s)',
+                             (user_id, setting_key, setting_value))
+
+            conn.commit()
+            conn.close()
+
+            logger.info(f"Bulk user settings updated for user {user_id}")
+            return {'success': True}
+
+        except Exception as e:
+            logger.error(f"Error updating bulk user settings: {str(e)}")
+            return {'error': str(e)}
+
 class APIKeyManager:
     def __init__(self):
         self.db = DatabaseManager()
@@ -530,5 +633,6 @@ class SessionManager:
 # Global instances
 db_manager = DatabaseManager()
 user_manager = UserManager()
+user_settings_manager = UserSettingsManager()
 api_key_manager = APIKeyManager()
 session_manager = SessionManager()
