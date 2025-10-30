@@ -12,6 +12,8 @@ logger = get_logger()
 
 class DatabaseManager:
     def __init__(self):
+        from dotenv import load_dotenv
+        load_dotenv()  # Load environment variables
         self.database_url = os.getenv('DATABASE_URL')
         if not self.database_url:
             logger.warning("DATABASE_URL environment variable is not set. Database operations will be disabled.")
@@ -73,16 +75,6 @@ class DatabaseManager:
                 usage_count INTEGER DEFAULT 0
             )''')
 
-            # Global API Keys (managed by admin)
-            c.execute('''CREATE TABLE IF NOT EXISTS global_api_keys (
-                id SERIAL PRIMARY KEY,
-                service_name VARCHAR(255) UNIQUE NOT NULL,
-                api_key TEXT NOT NULL,
-                description TEXT,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )''')
 
             # Posts table (existing)
             c.execute('''CREATE TABLE IF NOT EXISTS posts (
@@ -119,21 +111,7 @@ class DatabaseManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )''')
 
-            # Insert default admin user if not exists
-            admin_username = os.getenv('ADMIN_USERNAME', 'admin')
-            admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
-            admin_email = os.getenv('ADMIN_EMAIL', 'admin@seoautomation.com')
 
-            c.execute('SELECT id FROM users WHERE username = %s', (admin_username,))
-            if not c.fetchone():
-                password_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-                c.execute('''INSERT INTO users (username, email, password_hash, role, subscription_plan)
-                            VALUES (%s, %s, %s, 'admin', 'enterprise')''',
-                         (admin_username, admin_email, password_hash))
-                logger.info(f"Created default admin user: {admin_username}")
-
-            # Note: Default API keys are no longer inserted automatically
-            # Admin will add them manually through the admin interface
 
             conn.commit()
             logger.info("Database initialized successfully")
@@ -274,7 +252,7 @@ class UserManager:
             return None
 
     def get_all_users(self):
-        """Get all users (admin only)"""
+        """Get all users"""
         if not self._check_db_connection():
             return []
 
@@ -329,7 +307,7 @@ class UserManager:
             return {'error': str(e)}
 
     def delete_user(self, user_id):
-        """Delete user (admin only)"""
+        """Delete user"""
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
@@ -446,112 +424,6 @@ class APIKeyManager:
             logger.error(f"Error getting user API keys: {str(e)}")
             return []
 
-    def get_global_api_keys(self):
-        """Get all global API keys (admin only)"""
-        if not self._check_db_connection():
-            return []
-
-        try:
-            conn = self.db.get_connection()
-            c = conn.cursor()
-            c.execute('SELECT service_name, api_key, description, is_active, created_at FROM global_api_keys')
-            keys = c.fetchall()
-            conn.close()
-
-            return [{
-                'service_name': key[0],
-                'api_key': key[1],
-                'description': key[2],
-                'is_active': key[3],
-                'created_at': key[4]
-            } for key in keys]
-
-        except Exception as e:
-            logger.error(f"Error getting global API keys: {str(e)}")
-            return []
-
-    def update_global_api_key(self, service_name, api_key, description=''):
-        """Update global API key (admin only)"""
-        if not self._check_db_connection():
-            return {'error': 'Database not configured'}
-
-        try:
-            conn = self.db.get_connection()
-            c = conn.cursor()
-
-            c.execute('''INSERT INTO global_api_keys
-                         (service_name, api_key, description, updated_at)
-                         VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
-                         ON CONFLICT (service_name) DO UPDATE SET
-                         api_key = EXCLUDED.api_key,
-                         description = EXCLUDED.description,
-                         updated_at = EXCLUDED.updated_at''',
-                      (service_name, api_key, description))
-
-            conn.commit()
-            conn.close()
-
-            logger.info(f"Global API key updated: {service_name}")
-            return {'success': True}
-
-        except Exception as e:
-            logger.error(f"Error updating global API key: {str(e)}")
-            return {'error': str(e)}
-
-    def delete_user_api_key(self, user_id, service_name):
-        """Delete a user's API key"""
-        if not self._check_db_connection():
-            return {'error': 'Database not configured'}
-
-        try:
-            conn = self.db.get_connection()
-            c = conn.cursor()
-
-            c.execute('''DELETE FROM user_api_keys
-                         WHERE user_id = %s AND service_name = %s''',
-                      (user_id, service_name))
-
-            deleted = c.rowcount > 0
-            conn.commit()
-            conn.close()
-
-            if deleted:
-                logger.info(f"User API key deleted: {service_name} for user {user_id}")
-                return {'success': True}
-            else:
-                return {'error': 'API key not found'}
-
-        except Exception as e:
-            logger.error(f"Error deleting user API key: {str(e)}")
-            return {'error': str(e)}
-
-    def delete_global_api_key(self, service_name):
-        """Delete a global API key"""
-        if not self._check_db_connection():
-            return {'error': 'Database not configured'}
-
-        try:
-            conn = self.db.get_connection()
-            c = conn.cursor()
-
-            c.execute('''DELETE FROM global_api_keys
-                         WHERE service_name = %s''',
-                      (service_name,))
-
-            deleted = c.rowcount > 0
-            conn.commit()
-            conn.close()
-
-            if deleted:
-                logger.info(f"Global API key deleted: {service_name}")
-            else:
-                logger.info(f"Global API key not found for deletion: {service_name}")
-
-            return {'success': True}
-
-        except Exception as e:
-            logger.error(f"Error deleting global API key: {str(e)}")
-            return {'error': str(e)}
 
 class SessionManager:
     def __init__(self):
