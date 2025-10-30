@@ -272,3 +272,86 @@ def delete_api_key(service_name):
         logger = get_logger()
         logger.error(f"Error deleting API key: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
+
+@auth_bp.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    from app.models import user_settings_manager
+
+    if request.method == 'GET':
+        try:
+            user_settings = user_settings_manager.get_user_settings(session['user_id'])
+            return render_template('settings.html', settings=user_settings)
+        except Exception as e:
+            logger.error(f"Error fetching user settings: {str(e)}")
+            flash('Error loading settings', 'error')
+            return render_template('settings.html', settings={})
+
+    # Handle settings updates
+    try:
+        data = request.get_json() or request.form
+        settings_to_update = {}
+
+        # Process API configuration settings
+        api_settings = ['openai_api_key', 'semrush_api_key', 'wordpress_url', 'wordpress_username', 'wordpress_app_password', 'ga4_property_id']
+        for setting in api_settings:
+            if setting in data and data[setting]:
+                settings_to_update[setting] = data[setting]
+
+        # Process automation settings
+        automation_settings = ['daily_ranking_check', 'weekly_gbp_posts', 'monthly_reports', 'auto_reoptimize_threshold', 'slack_notifications']
+        for setting in automation_settings:
+            if setting in data:
+                settings_to_update[setting] = 'true' if data[setting] in ['true', 'on', '1'] else 'false'
+
+        # Process notification settings
+        notification_settings = ['slack_webhook_url', 'email_notifications', 'notify_blog_generation', 'notify_ranking_changes', 'notify_gbp_posts', 'notify_system_errors']
+        for setting in notification_settings:
+            if setting in data:
+                if setting == 'slack_webhook_url':
+                    settings_to_update[setting] = data[setting] or ''
+                else:
+                    settings_to_update[setting] = 'true' if data[setting] in ['true', 'on', '1'] else 'false'
+
+        # Process system settings
+        system_settings = ['database_backup', 'log_retention_days', 'api_rate_limit', 'debug_mode']
+        for setting in system_settings:
+            if setting in data:
+                settings_to_update[setting] = data[setting]
+
+        if settings_to_update:
+            result = user_settings_manager.update_user_settings_bulk(session['user_id'], settings_to_update)
+            if 'error' in result:
+                if request.is_json:
+                    return jsonify({'error': result['error']}), 400
+                flash(result['error'], 'error')
+            else:
+                if request.is_json:
+                    return jsonify({'success': True, 'message': 'Settings saved successfully'})
+                flash('Settings saved successfully', 'success')
+        else:
+            if request.is_json:
+                return jsonify({'success': True, 'message': 'No settings to update'})
+            flash('No settings to update', 'info')
+
+    except Exception as e:
+        logger.error(f"Error updating settings: {str(e)}")
+        if request.is_json:
+            return jsonify({'error': 'An unexpected error occurred'}), 500
+        flash('Error updating settings', 'error')
+
+    return redirect(url_for('auth.settings'))
+
+@auth_bp.route('/api/settings')
+@login_required
+def api_get_settings():
+    """Get user settings for AJAX calls"""
+    try:
+        from app.models import user_settings_manager
+        user_settings = user_settings_manager.get_user_settings(session['user_id'])
+        return jsonify(user_settings)
+    except Exception as e:
+        from app.utils.logger import get_logger
+        logger = get_logger()
+        logger.error(f"Error fetching user settings: {str(e)}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500
