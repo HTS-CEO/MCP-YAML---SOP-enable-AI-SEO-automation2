@@ -349,8 +349,14 @@ def admin_login():
 @admin_required
 def admin_dashboard():
     try:
+        # Test database connection first
+        from app.models import db_manager
+        if not db_manager.test_connection():
+            logger.error("Database connection test failed")
+            return render_template('admin_dashboard.html', users=[], db_error=True)
+
         users = user_manager.get_all_users()
-        return render_template('admin_dashboard.html', users=users)
+        return render_template('admin_dashboard.html', users=users, db_error=False)
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {str(e)}")
         # Return proper admin dashboard with setup message
@@ -649,8 +655,14 @@ def admin_login_redirect():
 @admin_required
 def admin_users():
     try:
+        # Test database connection first
+        from app.models import db_manager
+        if not db_manager.test_connection():
+            logger.error("Database connection test failed")
+            return render_template('admin_users.html', users=[], db_error=True)
+
         users = user_manager.get_all_users()
-        return render_template('admin_users.html', users=users)
+        return render_template('admin_users.html', users=users, db_error=False)
     except Exception as e:
         logger.error(f"Error loading admin users page: {str(e)}")
         # Return simple HTML page for admin users page
