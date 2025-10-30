@@ -23,6 +23,18 @@ class DatabaseManager:
             # Don't raise exception to allow app to start even if DB is not ready
             pass
 
+    def test_connection(self):
+        """Test database connection"""
+        try:
+            conn = self.get_connection()
+            c = conn.cursor()
+            c.execute('SELECT 1')
+            conn.close()
+            return True
+        except Exception as e:
+            logger.error(f"Database connection test failed: {str(e)}")
+            return False
+
     def get_connection(self):
         if not self.database_url:
             raise ValueError("Database URL is not configured")
