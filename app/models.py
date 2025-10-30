@@ -65,15 +65,17 @@ class DatabaseManager:
 
             # User API Keys table
             c.execute('''CREATE TABLE IF NOT EXISTS user_api_keys (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-                service_name VARCHAR(255) NOT NULL,
-                api_key TEXT NOT NULL,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_used TIMESTAMP,
-                usage_count INTEGER DEFAULT 0
-            )''')
+                 id SERIAL PRIMARY KEY,
+                 user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                 service_name VARCHAR(255) NOT NULL,
+                 api_key TEXT NOT NULL,
+                 is_active BOOLEAN DEFAULT TRUE,
+                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                 last_used TIMESTAMP,
+                 usage_count INTEGER DEFAULT 0,
+                 UNIQUE(user_id, service_name)
+             )''')
 
 
             # Posts table (existing)
@@ -483,8 +485,8 @@ class APIKeyManager:
 
             if existing:
                 # Update existing key
-                c.execute('''UPDATE user_api_keys SET api_key = %s, updated_at = CURRENT_TIMESTAMP
-                           WHERE user_id = %s AND service_name = %s''',
+                c.execute('''UPDATE user_api_keys SET api_key = %s
+                            WHERE user_id = %s AND service_name = %s''',
                          (api_key, user_id, service_name))
             else:
                 # Insert new key
