@@ -304,37 +304,52 @@ def delete_api_key(service_name):
 # Admin Routes
 @auth_bp.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    """Separate admin login form"""
+    """Admin login form - authenticates against database"""
     if request.method == 'GET':
         return render_template('admin_login.html')
-
-    # Get credentials from .env
-    admin_username = os.getenv('ADMIN_USERNAME', 'admin')
-    admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
 
     username = request.form.get('username')
     password = request.form.get('password')
 
-    if username == admin_username and password == admin_password:
-        # Create admin session
-        session['user_id'] = 'admin'
-        session['username'] = admin_username
-        session['role'] = 'admin'
-        logger.info(f"Admin logged in: {admin_username}")
-        return redirect(url_for('auth.admin_dashboard'))
-    else:
-        flash('Invalid admin credentials', 'error')
+    if not username or not password:
+        flash('Username and password required', 'error')
         return redirect(url_for('auth.admin_login'))
+
+    result = user_manager.authenticate_user(username, password)
+
+    if 'error' in result:
+        flash(result['error'], 'error')
+        return redirect(url_for('auth.admin_login'))
+
+    # Check if user has admin role
+    if result['user']['role'] != 'admin':
+        flash('Admin access required', 'error')
+        return redirect(url_for('auth.admin_login'))
+
+    # Create session
+    session_result = session_manager.create_session(
+        result['user']['id'],
+        request.remote_addr,
+        request.headers.get('User-Agent', '')
+    )
+
+    if 'error' in session_result:
+        flash('Login failed', 'error')
+        return redirect(url_for('auth.admin_login'))
+
+    # Set session
+    session['user_id'] = result['user']['id']
+    session['username'] = result['user']['username']
+    session['role'] = result['user']['role']
+
+    logger.info(f"Admin logged in: {result['user']['username']}")
+    return redirect(url_for('auth.admin_dashboard'))
 
 @auth_bp.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
     try:
-        # For admin users (from .env), show empty user list instead of trying to query DB
-        if session.get('user_id') == 'admin':
-            users = []
-        else:
-            users = user_manager.get_all_users()
+        users = user_manager.get_all_users()
         return render_template('admin_dashboard.html', users=users)
     except Exception as e:
         logger.error(f"Error loading admin dashboard: {str(e)}")
@@ -634,11 +649,7 @@ def admin_login_redirect():
 @admin_required
 def admin_users():
     try:
-        # For admin users (from .env), show empty user list instead of trying to query DB
-        if session.get('user_id') == 'admin':
-            users = []
-        else:
-            users = user_manager.get_all_users()
+        users = user_manager.get_all_users()
         return render_template('admin_users.html', users=users)
     except Exception as e:
         logger.error(f"Error loading admin users page: {str(e)}")
