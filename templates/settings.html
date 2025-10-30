@@ -460,7 +460,7 @@
         </div>
         <ul class="menu">
             <li class="menu-item">
-                <a class="menu-link" href="/dashboard">
+                <a class="menu-link" href="/">
                     <i class="fas fa-chart-line menu-icon"></i>
                     <span>Dashboard</span>
                 </a>
@@ -540,30 +540,30 @@
                 <div class="setting-card">
                     <div class="setting-group">
                         <label class="setting-label">OpenAI API Key</label>
-                        <input type="password" class="setting-input" placeholder="sk-...">
+                        <input type="password" class="setting-input" name="openai_api_key" placeholder="sk-...">
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">SEMrush API Key</label>
-                        <input type="password" class="setting-input" placeholder="Enter SEMrush API key">
+                        <input type="password" class="setting-input" name="semrush_api_key" placeholder="Enter SEMrush API key">
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">WordPress Base URL</label>
-                        <input type="url" class="setting-input" placeholder="https://yourblog.com">
+                        <input type="url" class="setting-input" name="wordpress_url" placeholder="https://yourblog.com">
                     </div>
                 </div>
 
                 <div class="setting-card">
                     <div class="setting-group">
                         <label class="setting-label">WordPress Username</label>
-                        <input type="text" class="setting-input" placeholder="admin">
+                        <input type="text" class="setting-input" name="wordpress_username" placeholder="admin">
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">WordPress App Password</label>
-                        <input type="password" class="setting-input" placeholder="abcd efgh...">
+                        <input type="password" class="setting-input" name="wordpress_app_password" placeholder="abcd efgh...">
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">GA4 Property ID</label>
-                        <input type="text" class="setting-input" placeholder="GA_MEASUREMENT_ID">
+                        <input type="text" class="setting-input" name="ga4_property_id" placeholder="GA_MEASUREMENT_ID">
                     </div>
                 </div>
             </div>
@@ -619,21 +619,21 @@
                     <div class="setting-group">
                         <label class="setting-label">Daily Ranking Check</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="daily_ranking_check" checked>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">Weekly GBP Posts</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="weekly_gbp_posts" checked>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">Monthly Reports</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="monthly_reports" checked>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -642,13 +642,13 @@
                 <div class="setting-card">
                     <div class="setting-group">
                         <label class="setting-label">Auto Re-optimization Threshold</label>
-                        <input type="number" class="setting-input" value="20" min="1" max="100">
+                        <input type="number" class="setting-input" name="auto_reoptimize_threshold" value="20" min="1" max="100">
                         <small style="color: var(--text-muted); font-size: 12px;">Rank position threshold for auto re-optimization</small>
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">Slack Notifications</label>
                         <label class="toggle-switch">
-                            <input type="checkbox">
+                            <input type="checkbox" name="slack_notifications">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -666,12 +666,12 @@
                 <div class="setting-card">
                     <div class="setting-group">
                         <label class="setting-label">Slack Webhook URL</label>
-                        <input type="url" class="setting-input" placeholder="https://hooks.slack.com/...">
+                        <input type="url" class="setting-input" name="slack_webhook_url" placeholder="https://hooks.slack.com/...">
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">Email Notifications</label>
                         <label class="toggle-switch">
-                            <input type="checkbox">
+                            <input type="checkbox" name="email_notifications">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -682,16 +682,16 @@
                         <label class="setting-label">Notification Types</label>
                         <div style="display: flex; flex-direction: column; gap: 10px;">
                             <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-                                <input type="checkbox" checked> Blog post generation
+                                <input type="checkbox" name="notify_blog_generation" value="blog_generation" checked> Blog post generation
                             </label>
                             <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-                                <input type="checkbox" checked> Ranking changes
+                                <input type="checkbox" name="notify_ranking_changes" value="ranking_changes" checked> Ranking changes
                             </label>
                             <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-                                <input type="checkbox"> GBP posts
+                                <input type="checkbox" name="notify_gbp_posts" value="gbp_posts"> GBP posts
                             </label>
                             <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-                                <input type="checkbox" checked> System errors
+                                <input type="checkbox" name="notify_system_errors" value="system_errors" checked> System errors
                             </label>
                         </div>
                     </div>
@@ -710,26 +710,26 @@
                     <div class="setting-group">
                         <label class="setting-label">Database Backup</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" name="database_backup" checked>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">Log Retention (days)</label>
-                        <input type="number" class="setting-input" value="30" min="1" max="365">
+                        <input type="number" class="setting-input" name="log_retention_days" value="30" min="1" max="365">
                     </div>
                 </div>
 
                 <div class="setting-card">
                     <div class="setting-group">
                         <label class="setting-label">API Rate Limiting</label>
-                        <input type="number" class="setting-input" value="100" min="1" max="1000">
+                        <input type="number" class="setting-input" name="api_rate_limit" value="100" min="1" max="1000">
                         <small style="color: var(--text-muted); font-size: 12px;">Requests per hour</small>
                     </div>
                     <div class="setting-group">
                         <label class="setting-label">Debug Mode</label>
                         <label class="toggle-switch">
-                            <input type="checkbox">
+                            <input type="checkbox" name="debug_mode">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -758,13 +758,209 @@
             sidebar.classList.toggle('active');
         });
 
-        // Settings functionality would be implemented here
-        // For demo purposes, we'll just show alerts
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                alert('Settings functionality would be implemented here');
-            });
+        // Load user settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserSettings();
         });
+
+        // Load user settings from backend
+        async function loadUserSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const settings = await response.json();
+
+                if (response.ok) {
+                    // Populate form fields with user settings
+                    populateSettingsForm(settings);
+                } else {
+                    console.error('Error loading settings:', settings.error);
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Populate form with settings data
+        function populateSettingsForm(settings) {
+            // API Configuration
+            if (settings.openai_api_key) document.querySelector('input[placeholder*="sk-"]').value = settings.openai_api_key;
+            if (settings.semrush_api_key) document.querySelector('input[placeholder*="SEMrush"]').value = settings.semrush_api_key;
+            if (settings.wordpress_url) document.querySelector('input[placeholder*="yourblog.com"]').value = settings.wordpress_url;
+            if (settings.wordpress_username) document.querySelector('input[placeholder*="admin"]').value = settings.wordpress_username;
+            if (settings.wordpress_app_password) document.querySelector('input[placeholder*="abcd"]').value = settings.wordpress_app_password;
+            if (settings.ga4_property_id) document.querySelector('input[placeholder*="GA_MEASUREMENT_ID"]').value = settings.ga4_property_id;
+
+            // Automation Settings
+            if (settings.daily_ranking_check === 'true') document.querySelector('input[name="daily_ranking_check"]').checked = true;
+            if (settings.weekly_gbp_posts === 'true') document.querySelector('input[name="weekly_gbp_posts"]').checked = true;
+            if (settings.monthly_reports === 'true') document.querySelector('input[name="monthly_reports"]').checked = true;
+            if (settings.auto_reoptimize_threshold) document.querySelector('input[name="auto_reoptimize_threshold"]').value = settings.auto_reoptimize_threshold;
+            if (settings.slack_notifications === 'true') document.querySelector('input[name="slack_notifications"]').checked = true;
+
+            // Notification Settings
+            if (settings.slack_webhook_url) document.querySelector('input[placeholder*="hooks.slack.com"]').value = settings.slack_webhook_url;
+            if (settings.email_notifications === 'true') document.querySelector('input[name="email_notifications"]').checked = true;
+            if (settings.notify_blog_generation === 'true') document.querySelector('input[value="blog_generation"]').checked = true;
+            if (settings.notify_ranking_changes === 'true') document.querySelector('input[value="ranking_changes"]').checked = true;
+            if (settings.notify_gbp_posts === 'true') document.querySelector('input[value="gbp_posts"]').checked = true;
+            if (settings.notify_system_errors === 'true') document.querySelector('input[value="system_errors"]').checked = true;
+
+            // System Settings
+            if (settings.database_backup === 'true') document.querySelector('input[name="database_backup"]').checked = true;
+            if (settings.log_retention_days) document.querySelector('input[name="log_retention_days"]').value = settings.log_retention_days;
+            if (settings.api_rate_limit) document.querySelector('input[name="api_rate_limit"]').value = settings.api_rate_limit;
+            if (settings.debug_mode === 'true') document.querySelector('input[name="debug_mode"]').checked = true;
+        }
+
+        // Save settings
+        async function saveSettings() {
+            const formData = new FormData();
+            const settings = {};
+
+            // Collect API settings
+            const openaiKey = document.querySelector('input[placeholder*="sk-"]').value;
+            if (openaiKey) settings.openai_api_key = openaiKey;
+
+            const semrushKey = document.querySelector('input[placeholder*="SEMrush"]').value;
+            if (semrushKey) settings.semrush_api_key = semrushKey;
+
+            const wpUrl = document.querySelector('input[placeholder*="yourblog.com"]').value;
+            if (wpUrl) settings.wordpress_url = wpUrl;
+
+            const wpUser = document.querySelector('input[placeholder*="admin"]').value;
+            if (wpUser) settings.wordpress_username = wpUser;
+
+            const wpPass = document.querySelector('input[placeholder*="abcd"]').value;
+            if (wpPass) settings.wordpress_app_password = wpPass;
+
+            const ga4Id = document.querySelector('input[placeholder*="GA_MEASUREMENT_ID"]').value;
+            if (ga4Id) settings.ga4_property_id = ga4Id;
+
+            // Collect automation settings
+            settings.daily_ranking_check = document.querySelector('input[name="daily_ranking_check"]').checked ? 'true' : 'false';
+            settings.weekly_gbp_posts = document.querySelector('input[name="weekly_gbp_posts"]').checked ? 'true' : 'false';
+            settings.monthly_reports = document.querySelector('input[name="monthly_reports"]').checked ? 'true' : 'false';
+            settings.auto_reoptimize_threshold = document.querySelector('input[name="auto_reoptimize_threshold"]').value;
+            settings.slack_notifications = document.querySelector('input[name="slack_notifications"]').checked ? 'true' : 'false';
+
+            // Collect notification settings
+            const slackWebhook = document.querySelector('input[placeholder*="hooks.slack.com"]').value;
+            settings.slack_webhook_url = slackWebhook;
+            settings.email_notifications = document.querySelector('input[name="email_notifications"]').checked ? 'true' : 'false';
+            settings.notify_blog_generation = document.querySelector('input[value="blog_generation"]').checked ? 'true' : 'false';
+            settings.notify_ranking_changes = document.querySelector('input[value="ranking_changes"]').checked ? 'true' : 'false';
+            settings.notify_gbp_posts = document.querySelector('input[value="gbp_posts"]').checked ? 'true' : 'false';
+            settings.notify_system_errors = document.querySelector('input[value="system_errors"]').checked ? 'true' : 'false';
+
+            // Collect system settings
+            settings.database_backup = document.querySelector('input[name="database_backup"]').checked ? 'true' : 'false';
+            settings.log_retention_days = document.querySelector('input[name="log_retention_days"]').value;
+            settings.api_rate_limit = document.querySelector('input[name="api_rate_limit"]').value;
+            settings.debug_mode = document.querySelector('input[name="debug_mode"]').checked ? 'true' : 'false';
+
+            try {
+                const response = await fetch('/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Settings saved successfully!', 'success');
+                } else {
+                    showNotification('Error saving settings: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showNotification('Error saving settings: ' + error.message, 'error');
+            }
+        }
+
+        // Reset settings to defaults
+        function resetSettings() {
+            if (confirm('Are you sure you want to reset all settings to defaults?')) {
+                // Reset form fields to defaults
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                document.querySelectorAll('input[type="text"], input[type="password"], input[type="url"], input[type="number"]').forEach(input => {
+                    input.value = '';
+                });
+
+                // Set some default values
+                document.querySelector('input[name="auto_reoptimize_threshold"]').value = '20';
+                document.querySelector('input[name="log_retention_days"]').value = '30';
+                document.querySelector('input[name="api_rate_limit"]').value = '100';
+
+                showNotification('Settings reset to defaults', 'info');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+
+            // Set background color based on type
+            if (type === 'success') {
+                notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            } else if (type === 'error') {
+                notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            } else if (type === 'warning') {
+                notification.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            } else {
+                notification.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Event listeners
+        document.querySelector('.btn-primary').addEventListener('click', saveSettings);
+        document.querySelector('.btn-danger').addEventListener('click', resetSettings);
     </script>
 </body>
 </html>
