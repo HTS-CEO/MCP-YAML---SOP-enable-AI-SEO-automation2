@@ -7,22 +7,7 @@ from app.routes.blog import blog_bp
 from app.routes.reoptimize import reoptimize_bp
 from app.routes.gbp import gbp_bp
 from app.routes.report import report_bp
-from app.routes.auth import auth_bp, admin_required
-from app.utils.logger import setup_logger, log_and_notify
-from app.utils.auth import token_required
-from app.models import db_manager, user_manager
-import sqlite3
-from datetime import datetime
-from scheduler import start_scheduler
-from flask_cors import CORS
-from flask_session import Session
-import os
-from dotenv import load_dotenv
-from app.routes.blog import blog_bp
-from app.routes.reoptimize import reoptimize_bp
-from app.routes.gbp import gbp_bp
-from app.routes.report import report_bp
-from app.routes.auth import auth_bp, admin_required
+from app.routes.auth import auth_bp
 from app.utils.logger import setup_logger, log_and_notify
 from app.utils.auth import token_required
 from app.models import db_manager, user_manager
@@ -102,35 +87,6 @@ def reports():
 def settings():
     return render_template('settings.html')
 
-@app.route('/admin')
-def admin_redirect():
-    """Redirect /admin to /admin/login"""
-    return redirect(url_for('auth.admin_login'))
-
-@app.route('/admin/login')
-def admin_login():
-    return render_template('admin_login.html')
-
-@app.route('/admin/users')
-@admin_required
-def admin_users():
-    users = user_manager.get_all_users()
-    return render_template('admin_users.html', users=users)
-
-@app.route('/admin/api-keys')
-@admin_required
-def admin_api_keys():
-    return render_template('admin_api_keys.html')
-
-@app.route('/admin/logs')
-@admin_required
-def admin_logs():
-    return render_template('admin_logs.html')
-
-@app.route('/admin/settings')
-@admin_required
-def admin_settings():
-    return render_template('admin_settings.html')
 
 @app.route('/<path:filename>')
 def serve_static(filename):
