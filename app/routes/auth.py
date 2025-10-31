@@ -355,3 +355,108 @@ def api_get_settings():
         logger = get_logger()
         logger.error(f"Error fetching user settings: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
+
+@auth_bp.route('/api/check_api_status')
+@login_required
+def check_api_status():
+    """Check real-time status of user's API connections"""
+    try:
+        from app.models import api_key_manager
+        user_id = session['user_id']
+
+        # Get user's API keys
+        user_keys = api_key_manager.get_user_api_keys(user_id)
+        status_results = {}
+
+        # Check OpenAI status
+        openai_key = None
+        for key in user_keys:
+            if key['service_name'] == 'openai' and key['is_active']:
+                openai_key = key['api_key']
+                break
+
+        if openai_key:
+            try:
+                import openai
+                openai.api_key = openai_key
+                # Test with a minimal request
+                openai.completions.create(
+                    model="text-davinci-003",
+                    prompt="test",
+                    max_tokens=5
+                )
+                status_results['openai'] = {'status': 'connected', 'message': 'API key is valid'}
+            except Exception as e:
+                status_results['openai'] = {'status': 'disconnected', 'message': str(e)}
+        else:
+            status_results['openai'] = {'status': 'disconnected', 'message': 'No API key configured'}
+
+        # Check WordPress status
+        wp_url = None
+        wp_username = None
+        wp_password = None
+        user_settings = user_settings_manager.get_user_settings(user_id)
+        if user_settings:
+            wp_url = user_settings.get('wordpress_url')
+            wp_username = user_settings.get('wordpress_username')
+            wp_app_password = user_settings.get('wordpress_app_password')
+
+        if wp_url and wp_username and wp_app_password:
+            try:
+                import requests
+                from requests.auth import HTTPBasicAuth
+
+                # Test WordPress connection
+                response = requests.get(
+                    f"{wp_url}/wp-json/wp/v2/users/me",
+                    auth=HTTPBasicAuth(wp_username, wp_app_password),
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    status_results['wordpress'] = {'status': 'connected', 'message': 'Connected successfully'}
+                else:
+                    status_results['wordpress'] = {'status': 'disconnected', 'message': f'HTTP {response.status_code}'}
+            except Exception as e:
+                status_results['wordpress'] = {'status': 'disconnected', 'message': str(e)}
+        else:
+            status_results['wordpress'] = {'status': 'disconnected', 'message': 'WordPress credentials not configured'}
+
+        # Check SEMrush status
+        semrush_key = None
+        for key in user_keys:
+            if key['service_name'] == 'semrush' and key['is_active']:
+                semrush_key = key['api_key']
+                break
+
+        if semrush_key:
+            try:
+                import requests
+                # Test SEMrush API
+                response = requests.get(
+                    f"https://api.semrush.com/?key={semrush_key}&type=phrase_this&phrase=test&database=us",
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    status_results['semrush'] = {'status': 'connected', 'message': 'API key is valid'}
+                else:
+                    status_results['semrush'] = {'status': 'disconnected', 'message': f'HTTP {response.status_code}'}
+            except Exception as e:
+                status_results['semrush'] = {'status': 'disconnected', 'message': str(e)}
+        else:
+            status_results['semrush'] = {'status': 'disconnected', 'message': 'No API key configured'}
+
+        # Check Google Analytics status
+        ga4_id = user_settings.get('ga4_property_id') if user_settings else None
+        if ga4_id:
+            # For now, just check if GA4 ID is configured
+            status_results['google_analytics'] = {'status': 'connected', 'message': 'Property ID configured'}
+        else:
+            status_results['google_analytics'] = {'status': 'disconnected', 'message': 'Property ID not configured'}
+
+        return jsonify(status_results)
+
+    except Exception as e:
+        from app.utils.logger import get_logger
+        logger = get_logger()
+        logger.error(f"Error checking API status: {str(e)}")
+        return jsonify({'error': 'Failed to check API status'}), 500
