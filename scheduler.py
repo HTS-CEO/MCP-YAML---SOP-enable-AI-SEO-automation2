@@ -18,7 +18,7 @@ def check_keyword_rankings():
 
         semrush_service = SEMrushService()
         wordpress_service = WordPressService()
-        openai_service = OpenAIService()
+        openai_service = OpenAIService()  # Admin/system level - uses env var
 
         # Get posts that need checking
         conn = sqlite3.connect('seo_automation.db')
@@ -66,7 +66,7 @@ def upload_weekly_gbp_photos():
         logger.info("Starting weekly GBP photo upload")
 
         google_service = GoogleService()
-        openai_service = OpenAIService()
+        openai_service = OpenAIService()  # Admin/system level - uses env var
 
         # Generate content for GBP post with image
         topics = [
