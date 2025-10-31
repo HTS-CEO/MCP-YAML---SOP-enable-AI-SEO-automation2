@@ -65,20 +65,19 @@ class DatabaseManager:
 
             # User API Keys table
             c.execute('''CREATE TABLE IF NOT EXISTS user_api_keys (
-                 id SERIAL PRIMARY KEY,
-                 user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-                 service_name VARCHAR(255) NOT NULL,
-                 api_key TEXT NOT NULL,
-                 is_active BOOLEAN DEFAULT TRUE,
-                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                 last_used TIMESTAMP,
-                 usage_count INTEGER DEFAULT 0,
-                 UNIQUE(user_id, service_name)
-             )''')
+                  id SERIAL PRIMARY KEY,
+                  user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                  service_name VARCHAR(255) NOT NULL,
+                  api_key TEXT NOT NULL,
+                  is_active BOOLEAN DEFAULT TRUE,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  last_used TIMESTAMP,
+                  usage_count INTEGER DEFAULT 0,
+                  UNIQUE(user_id, service_name)
+              )''')
 
-
-            # Posts table (existing)
+            # Posts table (existing) - updated to include user_id
             c.execute('''CREATE TABLE IF NOT EXISTS posts (
                 id SERIAL PRIMARY KEY,
                 user_id INTEGER REFERENCES users (id),
@@ -105,31 +104,34 @@ class DatabaseManager:
 
             # User Settings
             c.execute('''CREATE TABLE IF NOT EXISTS user_settings (
-                 id SERIAL PRIMARY KEY,
-                 user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-                 setting_key VARCHAR(255) NOT NULL,
-                 setting_value TEXT,
-                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                 UNIQUE(user_id, setting_key)
-             )''')
+                  id SERIAL PRIMARY KEY,
+                  user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+                  setting_key VARCHAR(255) NOT NULL,
+                  setting_value TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  UNIQUE(user_id, setting_key)
+              )''')
 
             # Activity Logs
             c.execute('''CREATE TABLE IF NOT EXISTS activity_logs (
-                 id SERIAL PRIMARY KEY,
-                 user_id INTEGER REFERENCES users (id),
-                 action VARCHAR(255) NOT NULL,
-                 details TEXT,
-                 ip_address VARCHAR(255),
-                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-             )''')
-
-
+                  id SERIAL PRIMARY KEY,
+                  user_id INTEGER REFERENCES users (id),
+                  action VARCHAR(255) NOT NULL,
+                  details TEXT,
+                  ip_address VARCHAR(255),
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              )''')
 
             conn.commit()
             logger.info("Database initialized successfully")
+
+            # Test the connection after initialization
+            self.test_connection()
+
         except Exception as e:
             logger.error(f"Failed to initialize database: {str(e)}")
+            # Don't raise exception to allow app to start even if DB is not ready
         finally:
             if conn:
                 conn.close()
