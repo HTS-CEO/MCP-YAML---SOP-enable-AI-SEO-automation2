@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.services.wordpress_service import WordPressService
 from app.services.openai_service import OpenAIService
 from app.utils.auth import token_required
@@ -21,7 +21,7 @@ def generate_blog():
             return jsonify({'error': 'Keyword is required'}), 400
 
         # Generate content with OpenAI
-        openai_service = OpenAIService()
+        openai_service = OpenAIService(user_id=session.get('user_id'))
         blog_content = openai_service.generate_blog_post(keyword, secondary_keywords)
 
         # Post to WordPress
