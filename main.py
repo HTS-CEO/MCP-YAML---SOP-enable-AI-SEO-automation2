@@ -33,7 +33,8 @@ logger = setup_logger()
 
 # Initialize database (now handled by models.py)
 try:
-    db_manager  # This will initialize the database
+    db_manager.init_database()  # Explicitly initialize database
+    logger.info("Database initialization completed")
 except Exception as e:
     logger.error(f"Database initialization failed: {str(e)}")
     # Continue without database for now
