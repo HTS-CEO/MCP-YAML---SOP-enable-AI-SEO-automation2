@@ -516,7 +516,13 @@
             <input type="text" placeholder="Search settings...">
         </div>
         <div class="header-actions">
-            
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="profile-btn">
+                <i class="fas fa-user"></i>
+            </button>
         </div>
     </header>
 
@@ -564,39 +570,39 @@
 
             <div class="api-status">
                 <div class="api-card">
-                    <div class="api-status-icon connected">
-                        <i class="fas fa-check"></i>
+                    <div class="api-status-icon" id="openai-status">
+                        <i class="fas fa-spinner fa-spin"></i>
                     </div>
                     <div class="api-info">
                         <div class="api-name">OpenAI</div>
-                        <div class="api-status-text">Connected</div>
+                        <div class="api-status-text" id="openai-text">Checking...</div>
                     </div>
                 </div>
                 <div class="api-card">
-                    <div class="api-status-icon connected">
-                        <i class="fas fa-check"></i>
+                    <div class="api-status-icon" id="wordpress-status">
+                        <i class="fas fa-spinner fa-spin"></i>
                     </div>
                     <div class="api-info">
                         <div class="api-name">WordPress</div>
-                        <div class="api-status-text">Connected</div>
+                        <div class="api-status-text" id="wordpress-text">Checking...</div>
                     </div>
                 </div>
                 <div class="api-card">
-                    <div class="api-status-icon disconnected">
-                        <i class="fas fa-times"></i>
+                    <div class="api-status-icon" id="semrush-status">
+                        <i class="fas fa-spinner fa-spin"></i>
                     </div>
                     <div class="api-info">
                         <div class="api-name">SEMrush</div>
-                        <div class="api-status-text">Not Connected</div>
+                        <div class="api-status-text" id="semrush-text">Checking...</div>
                     </div>
                 </div>
                 <div class="api-card">
-                    <div class="api-status-icon connected">
-                        <i class="fas fa-check"></i>
+                    <div class="api-status-icon" id="google_analytics-status">
+                        <i class="fas fa-spinner fa-spin"></i>
                     </div>
                     <div class="api-info">
                         <div class="api-name">Google Analytics</div>
-                        <div class="api-status-text">Connected</div>
+                        <div class="api-status-text" id="google_analytics-text">Checking...</div>
                     </div>
                 </div>
             </div>
@@ -755,6 +761,7 @@
         // Load user settings on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadUserSettings();
+            checkAPIStatus(); // Check API status on load
         });
 
         // Load user settings from backend
@@ -952,9 +959,61 @@
         `;
         document.head.appendChild(style);
 
+        // Check API status
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch('/api/check_api_status');
+                const statusData = await response.json();
+
+                if (response.ok) {
+                    updateAPIStatusCards(statusData);
+                } else {
+                    console.error('Failed to check API status');
+                }
+            } catch (error) {
+                console.error('Error checking API status:', error);
+            }
+        }
+
+        // Update API status cards with real data
+        function updateAPIStatusCards(statusData) {
+            // Update each API status individually
+            Object.keys(statusData).forEach(apiKey => {
+                const statusDataForAPI = statusData[apiKey];
+                const statusIcon = document.getElementById(`${apiKey}-status`);
+                const statusText = document.getElementById(`${apiKey}-text`);
+
+                if (statusIcon && statusText) {
+                    // Update status icon class
+                    statusIcon.className = `api-status-icon ${statusDataForAPI.status}`;
+
+                    // Update status text
+                    statusText.textContent = statusDataForAPI.message;
+
+                    // Update icon
+                    if (statusDataForAPI.status === 'connected') {
+                        statusIcon.innerHTML = '<i class="fas fa-check"></i>';
+                    } else {
+                        statusIcon.innerHTML = '<i class="fas fa-times"></i>';
+                    }
+                }
+            });
+        }
+
         // Event listeners
         document.querySelector('.btn-primary').addEventListener('click', saveSettings);
         document.querySelector('.btn-danger').addEventListener('click', resetSettings);
+
+        // Add refresh button for API status
+        const apiStatusSection = document.querySelector('.api-status');
+        if (apiStatusSection) {
+            const refreshButton = document.createElement('button');
+            refreshButton.className = 'btn btn-secondary';
+            refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Status';
+            refreshButton.style.marginTop = '15px';
+            refreshButton.onclick = checkAPIStatus;
+            apiStatusSection.appendChild(refreshButton);
+        }
     </script>
 </body>
 </html>
