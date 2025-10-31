@@ -2,14 +2,31 @@ import openai
 import os
 from app.utils.logger import get_logger
 import time
+from app.models import api_key_manager
 
 class OpenAIService:
-    def __init__(self):
-        openai.api_key = os.getenv('OPENAI_API_KEY')
+    def __init__(self, user_id=None):
         self.logger = get_logger()
+        self.user_id = user_id
+        self.api_key = self._get_api_key()
+
+    def _get_api_key(self):
+        """Get API key for the user or fallback to environment"""
+        if self.user_id:
+            user_keys = api_key_manager.get_user_api_keys(self.user_id)
+            for key in user_keys:
+                if key['service_name'] == 'openai' and key['is_active']:
+                    return key['api_key']
+
+        # Fallback to environment variable
+        return os.getenv('OPENAI_API_KEY')
 
     def generate_blog_post(self, keyword, secondary_keywords=''):
+        if not self.api_key:
+            raise ValueError("OpenAI API key not configured")
+
         try:
+            openai.api_key = self.api_key
             prompt = f"""
             Write a comprehensive, SEO-optimized blog post about "{keyword}".
             Additional keywords to include: {secondary_keywords}
@@ -26,7 +43,7 @@ class OpenAIService:
             Format the response as JSON with keys: title, content, seo_title, seo_description, faq
             """
 
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=3000,
@@ -54,7 +71,11 @@ class OpenAIService:
             }
 
     def reoptimize_content(self, existing_content, keywords):
+        if not self.api_key:
+            raise ValueError("OpenAI API key not configured")
+
         try:
+            openai.api_key = self.api_key
             prompt = f"""
             Re-optimize the following blog post content for better SEO performance.
             Target keywords: {keywords}
@@ -72,7 +93,7 @@ class OpenAIService:
             Return as JSON with keys: title, content, seo_title, seo_description
             """
 
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=2500,
@@ -96,7 +117,11 @@ class OpenAIService:
             }
 
     def generate_gbp_content(self, topic, max_length=150):
+        if not self.api_key:
+            raise ValueError("OpenAI API key not configured")
+
         try:
+            openai.api_key = self.api_key
             prompt = f"""
             Create engaging content for Google Business Profile post about: {topic}
 
@@ -109,7 +134,7 @@ class OpenAIService:
             Return as plain text.
             """
 
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=200,
