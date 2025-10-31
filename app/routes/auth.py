@@ -395,6 +395,7 @@ def check_api_status():
         wp_url = None
         wp_username = None
         wp_password = None
+        from app.models import user_settings_manager
         user_settings = user_settings_manager.get_user_settings(user_id)
         if user_settings:
             wp_url = user_settings.get('wordpress_url')
