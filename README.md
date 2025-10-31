@@ -13,11 +13,12 @@ A comprehensive web application that automates SEO tasks across WordPress, Googl
 - **Web Dashboard**: User-friendly interface for all operations
 
 ### Advanced Features
-- **Multi-user Support**: Admin and user roles with separate dashboards
+- **User Authentication**: Secure login/registration system
 - **Real-time API Status**: Check connection status for all integrated services
 - **Automated Notifications**: Slack and email alerts for important events
 - **Database Storage**: SQLite with PostgreSQL support
 - **Comprehensive Logging**: Detailed activity tracking and error monitoring
+- **Background Automation**: Scheduled tasks for continuous optimization
 
 ## 🔑 Required API Keys & Setup
 
@@ -217,10 +218,10 @@ PYTHON_VERSION=3.9.7
 - **System Settings**: Database backup, logging, rate limits
 
 ### Other Pages
-- **Re-optimize Posts** (`/reoptimize`): Improve existing content
-- **Google Business** (`/gbp`): Create social media posts
-- **Analytics** (`/analytics`): View detailed analytics
-- **Reports** (`/reports`): Comprehensive performance reports
+- **Re-optimize Posts** (`/reoptimize`): Improve existing content based on ranking performance
+- **Google Business** (`/gbp`): Create and publish posts to Google Business Profile
+- **Analytics** (`/analytics`): View detailed analytics from Google Analytics 4
+- **Reports** (`/reports`): Comprehensive performance reports combining all data sources
 
 ## 🔄 Daily Workflow
 
@@ -250,10 +251,10 @@ PYTHON_VERSION=3.9.7
 - **Publishing**: Posts created as drafts in WordPress for review
 
 ### Content Re-optimization
-- **Trigger**: Posts ranking below position 20 (configurable)
-- **Process**: AI analyzes existing content and suggests improvements
-- **Output**: Updated content with better SEO elements
-- **Automation**: Runs daily automatically
+- **Trigger**: Posts ranking below configurable threshold (default: position 20)
+- **Process**: AI analyzes existing content and creates improved versions
+- **Output**: Updated WordPress posts with better SEO optimization
+- **Automation**: Runs daily automatically based on SEMrush ranking data
 
 ### Google Business Profile
 - **Content Limit**: 1500 characters maximum
