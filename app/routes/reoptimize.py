@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app.services.wordpress_service import WordPressService
 from app.services.semrush_service import SEMrushService
 from app.services.openai_service import OpenAIService
@@ -30,7 +30,7 @@ def reoptimize_post():
             existing_post = wordpress_service.get_post(post_id)
 
             # Re-optimize with OpenAI
-            openai_service = OpenAIService()
+            openai_service = OpenAIService(user_id=session.get('user_id'))
             optimized_content = openai_service.reoptimize_content(
                 existing_post['content'],
                 keywords or existing_post.get('keywords', '')
